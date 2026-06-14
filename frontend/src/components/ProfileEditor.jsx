@@ -552,7 +552,7 @@ export default function ProfileEditor() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">Tahun Lulus</label>
-                  <Input type="number" {...register(`educations.${idx}.tahunLulus`)} placeholder="Tahun Lulus" />
+                  <Input type="number" disabled={watch(`educations.${idx}.isCurrent`)} {...register(`educations.${idx}.tahunLulus`)} placeholder="Tahun Lulus" className="disabled:bg-slate-100 disabled:text-slate-400" />
                 </div>
                 <div className="flex items-center pt-6">
                   <input type="checkbox" {...register(`educations.${idx}.isCurrent`)} className="h-4 w-4 text-orange-500 rounded border-gray-300 focus:ring-orange-500" />
@@ -605,7 +605,7 @@ export default function ProfileEditor() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">Tahun Selesai</label>
-                  <Input type="number" {...register(`jobs.${idx}.tahunSelesai`)} placeholder="Tahun Selesai" disabled={watch(`jobs.${idx}.isCurrent`)} />
+                  <Input type="number" disabled={watch(`jobs.${idx}.isCurrent`)} {...register(`jobs.${idx}.tahunSelesai`)} placeholder="Tahun Selesai" className="disabled:bg-slate-100 disabled:text-slate-400" />
                 </div>
                 <div className="flex items-center pt-6">
                   <input type="checkbox" {...register(`jobs.${idx}.isCurrent`)} id={`isCurrent-${idx}`} className="h-4 w-4 text-orange-500 border-slate-300 rounded focus:ring-orange-500" />

@@ -745,7 +745,7 @@ export default function PublicTracer() {
                       </div>
                       <div className="flex-1">
                         <label className="block text-xs font-medium">Thn Lulus</label>
-                        <select {...register(`educations.${index}.tahunLulus`)} className="w-full mt-1 border border-slate-300 rounded-md p-2 text-sm">
+                        <select disabled={watch(`educations.${index}.isCurrent`)} {...register(`educations.${index}.tahunLulus`)} className="w-full mt-1 border border-slate-300 rounded-md p-2 text-sm disabled:bg-slate-100 disabled:text-slate-400">
                           <option value="">Pilih Tahun</option>
                           {lulusYears.map(y => <option key={`ed-lulus-${y}`} value={y}>{y}</option>)}
                         </select>
@@ -795,7 +795,7 @@ export default function PublicTracer() {
                       </div>
                       <div className="flex-1">
                         <label className="block text-xs font-medium">Thn Selesai</label>
-                        <select {...register(`jobs.${index}.tahunSelesai`)} className="w-full mt-1 border border-slate-300 rounded-md p-2 text-sm">
+                        <select disabled={watch(`jobs.${index}.isCurrent`)} {...register(`jobs.${index}.tahunSelesai`)} className="w-full mt-1 border border-slate-300 rounded-md p-2 text-sm disabled:bg-slate-100 disabled:text-slate-400">
                           <option value="">Tahun</option>
                           {years.map(y => <option key={`job-selesai-${index}-${y}`} value={y}>{y}</option>)}
                         </select>
