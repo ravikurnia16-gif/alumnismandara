@@ -102,19 +102,30 @@ export default function MapPicker({ defaultLat = -0.2298, defaultLng = 100.6308,
 
   return (
     <div className="space-y-2">
-      <form onSubmit={handleSearch} className="flex space-x-2 relative z-10">
+      <div className="flex space-x-2 relative z-10">
         <input 
           type="text" 
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              handleSearch(e);
+            }
+          }}
           placeholder="Cari daerah, kota, atau jalan..." 
           className="flex-1 border border-slate-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
         />
-        <button type="submit" disabled={isSearching} className="bg-slate-800 text-white px-4 py-2 rounded-md hover:bg-slate-700 flex items-center text-sm">
+        <button 
+          type="button" 
+          onClick={handleSearch} 
+          disabled={isSearching} 
+          className="bg-slate-800 text-white px-4 py-2 rounded-md hover:bg-slate-700 flex items-center text-sm"
+        >
           <Search className="w-4 h-4 mr-2" />
           {isSearching ? "Mencari..." : "Cari"}
         </button>
-      </form>
+      </div>
 
       {searchResults.length > 0 && (
         <div className="border border-slate-200 rounded-md bg-white shadow-lg max-h-48 overflow-y-auto relative z-20">
