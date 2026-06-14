@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import { MapContainer, TileLayer, Marker, useMapEvents, useMap } from "react-leaflet";
-import { Search } from "lucide-react";
+import { Search, MapPin } from "lucide-react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
@@ -75,6 +75,30 @@ export default function MapPicker({ defaultLat = -0.2298, defaultLng = 100.6308,
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
+  const [isLocating, setIsLocating] = useState(false);
+
+  const getCurrentLocation = () => {
+    if ("geolocation" in navigator) {
+      setIsLocating(true);
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const lat = pos.coords.latitude;
+          const lon = pos.coords.longitude;
+          setPosition({ lat, lng: lon });
+          setMapCenter({ lat, lng: lon });
+          setIsLocating(false);
+        },
+        (err) => {
+          console.error(err);
+          alert("Gagal mendapatkan lokasi. Pastikan GPS aktif dan Anda mengizinkan akses lokasi.");
+          setIsLocating(false);
+        },
+        { enableHighAccuracy: true, timeout: 10000 }
+      );
+    } else {
+      alert("Browser Anda tidak mendukung Geolocation.");
+    }
+  };
 
   const handleSearch = async (e) => {
     e.preventDefault();
@@ -122,8 +146,18 @@ export default function MapPicker({ defaultLat = -0.2298, defaultLng = 100.6308,
           disabled={isSearching} 
           className="bg-slate-800 text-white px-4 py-2 rounded-md hover:bg-slate-700 flex items-center text-sm"
         >
-          <Search className="w-4 h-4 mr-2" />
-          {isSearching ? "Mencari..." : "Cari"}
+          <Search className="w-4 h-4 md:mr-2" />
+          <span className="hidden md:inline">{isSearching ? "Mencari..." : "Cari"}</span>
+        </button>
+        <button 
+          type="button" 
+          onClick={getCurrentLocation} 
+          disabled={isLocating} 
+          className="bg-orange-500 text-white px-4 py-2 rounded-md hover:bg-orange-600 flex items-center text-sm whitespace-nowrap"
+          title="Gunakan lokasi saya saat ini"
+        >
+          <MapPin className="w-4 h-4 md:mr-2" />
+          <span className="hidden md:inline">{isLocating ? "Melacak..." : "Lokasi GPS"}</span>
         </button>
       </div>
 
