@@ -241,9 +241,11 @@ const getDashboardStats = async (req, res) => {
     });
     
     const angkatanData = angkatanDataRaw
-      .filter(item => item.angkatan !== null)
+      .filter(item => item.angkatan !== null && item.angkatan !== 0)
       .map(item => ({ name: item.angkatan.toString(), count: item._count.angkatan }))
       .sort((a, b) => parseInt(a.name) - parseInt(b.name));
+
+    const totalAngkatan = angkatanData.length;
 
     const jurusanDataRaw = await prisma.alumni.groupBy({
       by: ['jurusan'],
@@ -276,6 +278,7 @@ const getDashboardStats = async (req, res) => {
       status: 'success',
       data: {
         totalAlumni,
+        totalAngkatan,
         angkatanData,
         jurusanData,
         statusKerjaData,
