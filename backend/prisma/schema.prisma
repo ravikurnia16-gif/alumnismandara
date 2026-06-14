@@ -45,8 +45,10 @@ model Alumni {
   kotaDomisili      String?
   kecamatanDomisili String?
   kelurahanDomisili String?
+  latitudeAsal      Float?
+  longitudeAsal     Float?
   latitude         Float?
-  longitude        Float?
+  longitude         Float?
   googleMapsLink   String?
   noHp             String?
   jurusan          String?

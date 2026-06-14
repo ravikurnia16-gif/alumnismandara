@@ -11,7 +11,7 @@ const submitPublicTracer = async (req, res) => {
       nisn, angkatan, namaAngkatan, tahunLulus, tempatLahir, tanggalLahir,
       alamat, negara, provinsi, kota, kecamatan, kelurahan, 
       alamatDomisili, negaraDomisili, provinsiDomisili, kotaDomisili, kecamatanDomisili, kelurahanDomisili,
-      latitude, longitude, googleMapsLink,
+      latitudeAsal, longitudeAsal, latitude, longitude, googleMapsLink,
       jurusanSma, namaAsrama, statusNikah, namaPasangan, jumlahAnak, bio,
       linkedin, instagram, facebook, tiktok, foto,
 
@@ -85,6 +85,8 @@ const submitPublicTracer = async (req, res) => {
           kotaDomisili,
           kecamatanDomisili,
           kelurahanDomisili,
+          latitudeAsal: latitudeAsal ? parseFloat(latitudeAsal) : null,
+          longitudeAsal: longitudeAsal ? parseFloat(longitudeAsal) : null,
           latitude: latitude ? parseFloat(latitude) : null,
           longitude: longitude ? parseFloat(longitude) : null,
           googleMapsLink,

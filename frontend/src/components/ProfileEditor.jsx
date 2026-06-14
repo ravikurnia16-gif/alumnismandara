@@ -33,6 +33,8 @@ export default function ProfileEditor() {
       kecamatanDomisili: "",
       kelurahanDomisili: "",
       isDomisiliSame: false,
+      latitudeAsal: "",
+      longitudeAsal: "",
       latitude: "",
       longitude: "",
       googleMapsLink: "",
@@ -105,6 +107,8 @@ export default function ProfileEditor() {
           kecamatanDomisili: d.kecamatanDomisili || "",
           kelurahanDomisili: d.kelurahanDomisili || "",
           isDomisiliSame: false,
+          latitudeAsal: d.latitudeAsal || "",
+          longitudeAsal: d.longitudeAsal || "",
           latitude: d.latitude || "",
           longitude: d.longitude || "",
           googleMapsLink: d.googleMapsLink || "",
@@ -142,23 +146,30 @@ export default function ProfileEditor() {
     }
   };
 
-  const handleLocationSelect = (lat, lng) => {
+  const handleLocationAsalSelect = (lat, lng) => {
+    setValue("latitudeAsal", lat);
+    setValue("longitudeAsal", lng);
+  };
+
+  const handleLocationDomisiliSelect = (lat, lng) => {
     setValue("latitude", lat);
     setValue("longitude", lng);
   };
 
   const watchIsDomisiliSame = watch("isDomisiliSame");
-  const watchAlamatAsal = watch(["alamat", "negara", "provinsi", "kota", "kecamatan", "kelurahan"]);
+  const watchAlamatAsal = watch(["alamat", "negara", "provinsi", "kota", "kecamatan", "kelurahan", "latitudeAsal", "longitudeAsal"]);
 
   useEffect(() => {
     if (watchIsDomisiliSame) {
-      const [alamat, negara, provinsi, kota, kecamatan, kelurahan] = watchAlamatAsal;
+      const [alamat, negara, provinsi, kota, kecamatan, kelurahan, latAsal, lngAsal] = watchAlamatAsal;
       setValue("alamatDomisili", alamat);
       setValue("negaraDomisili", negara);
       setValue("provinsiDomisili", provinsi);
       setValue("kotaDomisili", kota);
       setValue("kecamatanDomisili", kecamatan);
       setValue("kelurahanDomisili", kelurahan);
+      if (latAsal) setValue("latitude", latAsal);
+      if (lngAsal) setValue("longitude", lngAsal);
     }
   }, [watchIsDomisiliSame, watchAlamatAsal, setValue]);
 
@@ -336,6 +347,26 @@ export default function ProfileEditor() {
             <Input {...register("kelurahan")} placeholder="Kelurahan" />
           </div>
         </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">Latitude Asal</label>
+            <Input type="number" step="any" {...register("latitudeAsal")} readOnly className="bg-slate-50 cursor-not-allowed" />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">Longitude Asal</label>
+            <Input type="number" step="any" {...register("longitudeAsal")} readOnly className="bg-slate-50 cursor-not-allowed" />
+          </div>
+        </div>
+
+        <div className="mt-4">
+          <label className="block text-sm font-medium text-slate-700 mb-2">Tentukan Titik Lokasi Alamat Asal</label>
+          <MapPicker 
+            defaultLat={watch("latitudeAsal") ? parseFloat(watch("latitudeAsal")) : -0.2298} 
+            defaultLng={watch("longitudeAsal") ? parseFloat(watch("longitudeAsal")) : 100.6308} 
+            onLocationSelect={handleLocationAsalSelect} 
+          />
+        </div>
       </div>
 
       {/* Alamat Domisili */}
@@ -394,25 +425,27 @@ export default function ProfileEditor() {
           <Input {...register("googleMapsLink")} placeholder="https://maps.app.goo.gl/..." className="mb-6" />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Latitude</label>
-            <Input type="number" step="any" {...register("latitude")} readOnly className="bg-slate-50 cursor-not-allowed" />
+            <label className="block text-sm font-medium text-slate-700 mb-1">Latitude Domisili</label>
+            <Input type="number" step="any" {...register("latitude")} readOnly className="bg-slate-50 cursor-not-allowed" disabled={watchIsDomisiliSame} />
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Longitude</label>
-            <Input type="number" step="any" {...register("longitude")} readOnly className="bg-slate-50 cursor-not-allowed" />
+            <label className="block text-sm font-medium text-slate-700 mb-1">Longitude Domisili</label>
+            <Input type="number" step="any" {...register("longitude")} readOnly className="bg-slate-50 cursor-not-allowed" disabled={watchIsDomisiliSame} />
           </div>
         </div>
 
-        <div>
-          <label className="block text-sm font-medium text-slate-700 mb-2">Tentukan Lokasi di Peta</label>
-          <MapPicker 
-            defaultLat={watchLatitude ? parseFloat(watchLatitude) : -0.2298} 
-            defaultLng={watchLongitude ? parseFloat(watchLongitude) : 100.6308} 
-            onLocationSelect={handleLocationSelect} 
-          />
-        </div>
+        {!watchIsDomisiliSame && (
+          <div className="mt-4">
+            <label className="block text-sm font-medium text-slate-700 mb-2">Tentukan Titik Lokasi Domisili (Saat Ini)</label>
+            <MapPicker 
+              defaultLat={watch("latitude") ? parseFloat(watch("latitude")) : (watch("latitudeAsal") ? parseFloat(watch("latitudeAsal")) : -0.2298)} 
+              defaultLng={watch("longitude") ? parseFloat(watch("longitude")) : (watch("longitudeAsal") ? parseFloat(watch("longitudeAsal")) : 100.6308)} 
+              onLocationSelect={handleLocationDomisiliSelect} 
+            />
+          </div>
+        )}
       </div>
 
       {/* Hubungan Pernikahan & Keluarga */}

@@ -102,7 +102,7 @@ const createOrUpdateAlumni = async (req, res) => {
       nisn, angkatan, namaAngkatan, tahunLulus, tempatLahir, tanggalLahir,
       alamat, negara, provinsi, kota, kecamatan, kelurahan,
       alamatDomisili, negaraDomisili, provinsiDomisili, kotaDomisili, kecamatanDomisili, kelurahanDomisili,
-      latitude, longitude, googleMapsLink, noHp,
+      latitudeAsal, longitudeAsal, latitude, longitude, googleMapsLink, noHp,
       jurusan, namaAsrama, statusNikah, namaPasangan, jumlahAnak, bio,
       linkedin, instagram, facebook, tiktok,
       educations, jobs, children
@@ -159,6 +159,8 @@ const createOrUpdateAlumni = async (req, res) => {
       kotaDomisili,
       kecamatanDomisili,
       kelurahanDomisili,
+      latitudeAsal: latitudeAsal ? parseFloat(latitudeAsal) : null,
+      longitudeAsal: longitudeAsal ? parseFloat(longitudeAsal) : null,
       latitude: latitude ? parseFloat(latitude) : null,
       longitude: longitude ? parseFloat(longitude) : null,
       googleMapsLink,

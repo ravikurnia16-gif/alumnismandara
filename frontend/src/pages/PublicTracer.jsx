@@ -48,6 +48,8 @@ const tracerSchema = z.object({
   kecamatanDomisili: z.string().optional(),
   kelurahanDomisili: z.string().optional(),
   alamatDomisili: z.string().optional(),
+  latitudeAsal: z.number().nullable().optional(),
+  longitudeAsal: z.number().nullable().optional(),
   latitude: z.number().nullable().optional(),
   longitude: z.number().nullable().optional(),
   googleMapsLink: z.string().optional(),
@@ -111,7 +113,11 @@ export default function PublicTracer() {
       kotaDomisili: "",
       kecamatanDomisili: "",
       kelurahanDomisili: "",
-      alamatDomisili: ""
+      alamatDomisili: "",
+      latitudeAsal: null,
+      longitudeAsal: null,
+      latitude: null,
+      longitude: null,
     }
   });
 
@@ -134,17 +140,19 @@ export default function PublicTracer() {
   const jumlahAnak = watch("jumlahAnak");
   
   const watchIsDomisiliSame = watch("isDomisiliSame");
-  const watchAlamatAsal = watch(["alamat", "negara", "provinsi", "kota", "kecamatan", "kelurahan"]);
+  const watchAlamatAsal = watch(["alamat", "negara", "provinsi", "kota", "kecamatan", "kelurahan", "latitudeAsal", "longitudeAsal"]);
 
   useEffect(() => {
     if (watchIsDomisiliSame) {
-      const [alamat, negara, provinsi, kota, kecamatan, kelurahan] = watchAlamatAsal;
+      const [alamat, negara, provinsi, kota, kecamatan, kelurahan, latAsal, lngAsal] = watchAlamatAsal;
       setValue("alamatDomisili", alamat || "");
       setValue("negaraDomisili", negara || "");
       setValue("provinsiDomisili", provinsi || "");
       setValue("kotaDomisili", kota || "");
       setValue("kecamatanDomisili", kecamatan || "");
       setValue("kelurahanDomisili", kelurahan || "");
+      if (latAsal) setValue("latitude", latAsal);
+      if (lngAsal) setValue("longitude", lngAsal);
     }
   }, [watchIsDomisiliSame, watchAlamatAsal, setValue]);
 
@@ -256,7 +264,12 @@ export default function PublicTracer() {
     }
   };
 
-  const handleLocationSelect = (lat, lng) => {
+  const handleLocationAsalSelect = (lat, lng) => {
+    setValue("latitudeAsal", lat);
+    setValue("longitudeAsal", lng);
+  };
+
+  const handleLocationDomisiliSelect = (lat, lng) => {
     setValue("latitude", lat);
     setValue("longitude", lng);
   };
@@ -513,6 +526,11 @@ export default function PublicTracer() {
                 <Input {...register("alamat")} className="mt-1" placeholder="Jl. Contoh No 123..." />
               </div>
 
+              <div className="mb-4">
+                <label className="block text-sm font-medium mb-2">Atau Tandai Lokasi Peta Alamat Asal</label>
+                <MapPicker onLocationSelect={handleLocationAsalSelect} />
+              </div>
+
               <h3 className="text-xl font-semibold border-b pb-2 mt-8 mb-4">Alamat Domisili (Saat Ini) & Peta</h3>
               
               <div className="mb-4 flex items-center">
@@ -557,7 +575,7 @@ export default function PublicTracer() {
               </div>
 
               <div className="mb-4">
-                <label className="block text-sm font-medium">Link Google Maps Lokasi (Opsional)</label>
+                <label className="block text-sm font-medium">Link Google Maps Lokasi Domisili (Opsional)</label>
                 <div className="mt-1 flex rounded-md shadow-sm">
                   <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-slate-300 bg-slate-50 text-slate-500 text-sm">
                     URL
@@ -567,10 +585,16 @@ export default function PublicTracer() {
                 <p className="text-xs text-slate-500 mt-1">Anda bisa menempelkan link (tautan) dari aplikasi Google Maps di sini.</p>
               </div>
 
-              <div className="mb-4">
-                <label className="block text-sm font-medium mb-2">Atau Tandai Lokasi di Peta</label>
-                <MapPicker onLocationSelect={handleLocationSelect} />
-              </div>
+              {!watchIsDomisiliSame && (
+                <div className="mb-4">
+                  <label className="block text-sm font-medium mb-2">Tandai Lokasi Peta Domisili</label>
+                  <MapPicker 
+                    defaultLat={watch("latitudeAsal") ? parseFloat(watch("latitudeAsal")) : undefined}
+                    defaultLng={watch("longitudeAsal") ? parseFloat(watch("longitudeAsal")) : undefined}
+                    onLocationSelect={handleLocationDomisiliSelect} 
+                  />
+                </div>
+              )}
             </section>
 
             {/* BAGIAN 3: PENDIDIKAN LANJUTAN */}
