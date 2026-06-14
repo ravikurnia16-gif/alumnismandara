@@ -34,7 +34,7 @@ const tracerSchema = z.object({
   namaAsrama: z.string().optional(),
   
   // Alamat & Geografis
-  isIndonesia: z.boolean(),
+  isIndonesia: z.preprocess(val => val === true || val === "true", z.boolean()),
   negara: z.string().min(1, "Negara wajib diisi"),
   provinsi: z.string().optional(),
   kota: z.string().optional(),
@@ -80,6 +80,10 @@ const tracerSchema = z.object({
 
   // Legacy Tracer
   statusKerja: z.string().optional(),
+  namaPerusahaan: z.string().optional(),
+  jabatan: z.string().optional(),
+  gajiRange: z.string().optional(),
+  kesesuaianJurusan: z.string().optional(),
 });
 
 export default function PublicTracer() {
