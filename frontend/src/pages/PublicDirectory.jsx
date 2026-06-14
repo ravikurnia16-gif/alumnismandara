@@ -24,7 +24,7 @@ export default function PublicDirectory() {
   const fetchDirectory = async () => {
     setLoading(true);
     try {
-      const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/public/directory`, {
+      const res = await axios.get(`/api/public/directory`, {
         params: { search, angkatan, provinsi }
       });
       if (res.data.status === 'success') {

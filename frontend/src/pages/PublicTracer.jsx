@@ -153,14 +153,14 @@ export default function PublicTracer() {
       .catch(console.error);
       
     // Fetch unique asrama list
-    axios.get(`${import.meta.env.VITE_API_URL}/api/public/asrama`)
+    axios.get(`/api/public/asrama`)
       .then(res => {
         if (res.data?.data) setAsramaList(res.data.data);
       })
       .catch(console.error);
       
     // Fetch unique nama angkatan list
-    axios.get(`${import.meta.env.VITE_API_URL}/api/public/nama-angkatan`)
+    axios.get(`/api/public/nama-angkatan`)
       .then(res => {
         if (res.data?.data) setNamaAngkatanList(res.data.data);
       })

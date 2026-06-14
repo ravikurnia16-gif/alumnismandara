@@ -133,7 +133,7 @@ export default function NewsTable() {
                 <tr key={item.id} className="hover:bg-slate-50 transition-colors">
                   <td className="py-3 px-6">
                     {item.image ? (
-                      <img src={`http://localhost:5000${item.image}`} alt={item.title} className="w-16 h-12 object-cover rounded-md border border-slate-200" />
+                      <img src={item.image} alt={item.title} className="w-16 h-12 object-cover rounded-md border border-slate-200" />
                     ) : (
                       <div className="w-16 h-12 bg-slate-100 rounded-md flex items-center justify-center text-slate-400 border border-slate-200">
                         <ImageIcon size={16} />

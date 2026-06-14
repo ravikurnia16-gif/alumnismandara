@@ -16,7 +16,7 @@ export default function AlumniDirectory() {
     setLoading(true);
     try {
       const token = localStorage.getItem("token");
-      const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/alumni/directory`, {
+      const res = await axios.get(`/api/alumni/directory`, {
         headers: { Authorization: `Bearer ${token}` },
         params: { search, angkatan, provinsi }
       });

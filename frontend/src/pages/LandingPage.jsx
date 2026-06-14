@@ -51,7 +51,7 @@ export default function LandingPage() {
         <div className="flex items-center gap-2 sm:gap-3">
           <div className="w-9 h-9 sm:w-12 sm:h-12 bg-orange-500 rounded-full flex items-center justify-center border-2 border-orange-200 shadow-inner shrink-0 overflow-hidden">
             {settings.schoolLogo ? (
-              <img src={`http://localhost:5000${settings.schoolLogo}`} alt="Logo" className="max-h-full max-w-full object-contain" />
+              <img src={settings.schoolLogo} alt="Logo" className="max-h-full max-w-full object-contain" />
             ) : (
               <GraduationCap className="h-4 w-4 sm:h-6 sm:w-6 text-white" />
             )}
@@ -143,7 +143,7 @@ export default function LandingPage() {
                   <div key={news.id} className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden hover:shadow-md transition-shadow group flex flex-col">
                     {news.image ? (
                       <div className="h-48 overflow-hidden">
-                        <img src={`http://localhost:5000${news.image}`} alt={news.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                        <img src={news.image} alt={news.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                       </div>
                     ) : (
                       <div className="h-48 bg-slate-100 flex items-center justify-center text-slate-400">
@@ -184,7 +184,7 @@ export default function LandingPage() {
                 </DialogHeader>
                 {selectedNews.image && (
                   <div className="w-full rounded-xl overflow-hidden my-4 max-h-[400px] flex items-center justify-center bg-slate-100">
-                    <img src={`http://localhost:5000${selectedNews.image}`} alt={selectedNews.title} className="max-w-full max-h-[400px] object-contain" />
+                    <img src={selectedNews.image} alt={selectedNews.title} className="max-w-full max-h-[400px] object-contain" />
                   </div>
                 )}
                 <div className="text-slate-700 leading-relaxed whitespace-pre-wrap">

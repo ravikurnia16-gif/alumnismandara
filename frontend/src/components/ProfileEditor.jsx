@@ -110,7 +110,7 @@ export default function ProfileEditor() {
           children: d.children || []
         });
         if (d.foto) {
-          setFotoPreview(`http://localhost:5000${d.foto}`);
+          setFotoPreview(d.foto);
         }
       }
     } catch (err) {

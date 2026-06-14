@@ -47,7 +47,7 @@ export default function AlumniMap({ alumniList = [] }) {
               <div className="flex flex-col items-center space-y-2 p-1 max-w-[200px]">
                 {al.foto ? (
                   <img 
-                    src={`http://localhost:5000${al.foto}`} 
+                    src={al.foto} 
                     alt={al.user?.name || "Foto"} 
                     className="w-12 h-12 rounded-full object-cover border border-slate-200" 
                   />

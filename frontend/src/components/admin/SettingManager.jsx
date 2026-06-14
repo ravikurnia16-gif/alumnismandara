@@ -18,7 +18,7 @@ export default function SettingManager() {
       if (res.data.status === "success") {
         setSchoolName(res.data.data.schoolName);
         if (res.data.data.schoolLogo) {
-          setLogoPreview(`http://localhost:5000${res.data.data.schoolLogo}`);
+          setLogoPreview(res.data.data.schoolLogo);
         }
       }
     } catch (err) {
