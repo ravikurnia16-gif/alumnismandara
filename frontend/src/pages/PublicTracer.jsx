@@ -222,6 +222,7 @@ export default function PublicTracer() {
   const currentYear = new Date().getFullYear();
   const angkatanYears = Array.from({ length: currentYear - 2013 + 1 }, (_, i) => currentYear - i);
   const lulusYears = Array.from({ length: currentYear + 5 - 2016 + 1 }, (_, i) => currentYear + 5 - i);
+  const years = Array.from({ length: 50 }, (_, i) => currentYear + 5 - i);
 
   // Fetch Provinces on mount
   useEffect(() => {
