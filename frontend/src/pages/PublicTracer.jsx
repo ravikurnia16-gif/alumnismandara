@@ -93,6 +93,12 @@ export default function PublicTracer() {
   const [regencies, setRegencies] = useState([]);
   const [districts, setDistricts] = useState([]);
   const [villages, setVillages] = useState([]);
+  
+  const [domisiliRegencies, setDomisiliRegencies] = useState([]);
+  const [domisiliDistricts, setDomisiliDistricts] = useState([]);
+  const [domisiliVillages, setDomisiliVillages] = useState([]);
+  const [isIndonesiaDomisili, setIsIndonesiaDomisili] = useState(true);
+
   const [universities, setUniversities] = useState([]);
   const [asramaList, setAsramaList] = useState([]);
   const [namaAngkatanList, setNamaAngkatanList] = useState([]);
@@ -260,6 +266,45 @@ export default function PublicTracer() {
     if (distId) {
       axios.get(`${API_WILAYAH}/villages/${distId}.json`)
         .then(res => setVillages(res.data))
+        .catch(console.error);
+    }
+  };
+
+  const handleDomisiliProvinceChange = (e) => {
+    const provId = e.target.options[e.target.selectedIndex].getAttribute("data-id");
+    setValue("provinsiDomisili", e.target.value);
+    setValue("kotaDomisili", "");
+    setValue("kecamatanDomisili", "");
+    setValue("kelurahanDomisili", "");
+    
+    if (provId) {
+      axios.get(`${API_WILAYAH}/regencies/${provId}.json`)
+        .then(res => setDomisiliRegencies(res.data))
+        .catch(console.error);
+    }
+  };
+
+  const handleDomisiliRegencyChange = (e) => {
+    const regId = e.target.options[e.target.selectedIndex].getAttribute("data-id");
+    setValue("kotaDomisili", e.target.value);
+    setValue("kecamatanDomisili", "");
+    setValue("kelurahanDomisili", "");
+    
+    if (regId) {
+      axios.get(`${API_WILAYAH}/districts/${regId}.json`)
+        .then(res => setDomisiliDistricts(res.data))
+        .catch(console.error);
+    }
+  };
+
+  const handleDomisiliDistrictChange = (e) => {
+    const distId = e.target.options[e.target.selectedIndex].getAttribute("data-id");
+    setValue("kecamatanDomisili", e.target.value);
+    setValue("kelurahanDomisili", "");
+    
+    if (distId) {
+      axios.get(`${API_WILAYAH}/villages/${distId}.json`)
+        .then(res => setDomisiliVillages(res.data))
         .catch(console.error);
     }
   };
@@ -547,27 +592,77 @@ export default function PublicTracer() {
 
               <div className="mb-4">
                 <label className="block text-sm font-medium">Negara Domisili *</label>
-                <Input {...register("negaraDomisili")} className="mt-1" placeholder="Negara" disabled={watchIsDomisiliSame} />
+                <Input {...register("negaraDomisili")} className="mt-1" placeholder="Negara" disabled={watchIsDomisiliSame || isIndonesiaDomisili} />
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                <div>
-                  <label className="block text-sm font-medium">Provinsi Domisili</label>
-                  <Input {...register("provinsiDomisili")} className="mt-1" placeholder="Provinsi" disabled={watchIsDomisiliSame} />
+              {!watchIsDomisiliSame && (
+                <div className="mb-4 flex items-center space-x-6">
+                  <label className="flex items-center">
+                    <input type="radio" value={true} checked={isIndonesiaDomisili === true} className="mr-2" 
+                      onChange={() => { setIsIndonesiaDomisili(true); setValue("negaraDomisili", "Indonesia"); }} 
+                    />
+                    Di Indonesia
+                  </label>
+                  <label className="flex items-center">
+                    <input type="radio" value={false} checked={isIndonesiaDomisili === false} className="mr-2" 
+                      onChange={() => { setIsIndonesiaDomisili(false); setValue("negaraDomisili", ""); }} 
+                    />
+                    Di Luar Negeri
+                  </label>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium">Kabupaten/Kota Domisili</label>
-                  <Input {...register("kotaDomisili")} className="mt-1" placeholder="Kota / Kabupaten" disabled={watchIsDomisiliSame} />
+              )}
+
+              {watchIsDomisiliSame || !isIndonesiaDomisili ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                  <div>
+                    <label className="block text-sm font-medium">Provinsi Domisili</label>
+                    <Input {...register("provinsiDomisili")} className="mt-1" placeholder="Provinsi" disabled={watchIsDomisiliSame} />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium">Kabupaten/Kota Domisili</label>
+                    <Input {...register("kotaDomisili")} className="mt-1" placeholder="Kota / Kabupaten" disabled={watchIsDomisiliSame} />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium">Kecamatan Domisili</label>
+                    <Input {...register("kecamatanDomisili")} className="mt-1" placeholder="Kecamatan" disabled={watchIsDomisiliSame} />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium">Kelurahan/Desa Domisili</label>
+                    <Input {...register("kelurahanDomisili")} className="mt-1" placeholder="Kelurahan / Desa" disabled={watchIsDomisiliSame} />
+                  </div>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium">Kecamatan Domisili</label>
-                  <Input {...register("kecamatanDomisili")} className="mt-1" placeholder="Kecamatan" disabled={watchIsDomisiliSame} />
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                  <div>
+                    <label className="block text-sm font-medium">Provinsi Domisili</label>
+                    <select className="w-full mt-1 border border-slate-300 rounded-md p-2" onChange={handleDomisiliProvinceChange}>
+                      <option value="">Pilih Provinsi</option>
+                      {provinces.map(p => <option key={`dom-prov-${p.id}`} data-id={p.id} value={p.name}>{p.name}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium">Kabupaten/Kota Domisili</label>
+                    <select className="w-full mt-1 border border-slate-300 rounded-md p-2" onChange={handleDomisiliRegencyChange}>
+                      <option value="">Pilih Kota/Kabupaten</option>
+                      {domisiliRegencies.map(r => <option key={`dom-reg-${r.id}`} data-id={r.id} value={r.name}>{r.name}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium">Kecamatan Domisili</label>
+                    <select className="w-full mt-1 border border-slate-300 rounded-md p-2" onChange={handleDomisiliDistrictChange}>
+                      <option value="">Pilih Kecamatan</option>
+                      {domisiliDistricts.map(d => <option key={`dom-dist-${d.id}`} data-id={d.id} value={d.name}>{d.name}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium">Kelurahan/Desa Domisili</label>
+                    <select className="w-full mt-1 border border-slate-300 rounded-md p-2" {...register("kelurahanDomisili")}>
+                      <option value="">Pilih Kelurahan</option>
+                      {domisiliVillages.map(v => <option key={`dom-vil-${v.id}`} value={v.name}>{v.name}</option>)}
+                    </select>
+                  </div>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium">Kelurahan/Desa Domisili</label>
-                  <Input {...register("kelurahanDomisili")} className="mt-1" placeholder="Kelurahan / Desa" disabled={watchIsDomisiliSame} />
-                </div>
-              </div>
+              )}
 
               <div className="mb-4">
                 <label className="block text-sm font-medium">Detail Alamat / Jalan Domisili</label>
