@@ -8,6 +8,7 @@ import AlumniDashboard from "./pages/AlumniDashboard";
 import PublicTracer from "./pages/PublicTracer";
 import PublicDirectory from "./pages/PublicDirectory";
 import DonationPage from "./pages/DonationPage";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 function App() {
   useEffect(() => {
@@ -38,8 +39,22 @@ function App() {
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<Login />} />
-        <Route path="/admin/*" element={<AdminDashboard />} />
-        <Route path="/dashboard/*" element={<AlumniDashboard />} />
+        <Route 
+          path="/admin/*" 
+          element={
+            <ProtectedRoute allowedRoles={['SUPERADMIN', 'ADMIN']}>
+              <AdminDashboard />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/dashboard/*" 
+          element={
+            <ProtectedRoute allowedRoles={['ALUMNI', 'SUPERADMIN', 'ADMIN']}>
+              <AlumniDashboard />
+            </ProtectedRoute>
+          } 
+        />
         <Route path="/tracer-study" element={<PublicTracer />} />
         <Route path="/directory" element={<PublicDirectory />} />
         <Route path="/donation" element={<DonationPage />} />
