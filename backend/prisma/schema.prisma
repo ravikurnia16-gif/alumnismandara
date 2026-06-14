@@ -1,0 +1,156 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  name      String
+  email     String   @unique
+  password  String
+  role      Role     @default(ALUMNI)
+  alumni    Alumni?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum Role {
+  SUPERADMIN
+  ADMIN
+  ALUMNI
+}
+
+model Alumni {
+  id               String        @id @default(uuid())
+  userId           String        @unique
+  nisn             String?
+  angkatan         Int
+  namaAngkatan     String?
+  tahunLulus       Int
+  tempatLahir      String?
+  tanggalLahir     DateTime?
+  alamat           String?
+  negara           String?   @default("Indonesia")
+  provinsi         String?
+  kota             String?
+  kecamatan        String?
+  kelurahan        String?
+  latitude         Float?
+  longitude        Float?
+  googleMapsLink   String?
+  noHp             String?
+  jurusan          String?
+  namaAsrama       String?
+  statusNikah      String?
+  namaPasangan     String?
+  jumlahAnak       Int?              @default(0)
+
+  // Media Sosial
+  linkedin      String?
+  instagram     String?
+  facebook      String?
+  tiktok        String?
+
+  foto             String?
+  bio              String?
+  user             User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tracerStudies    TracerStudy[]
+  educations       AlumniEducation[]
+  jobs             AlumniJob[]
+  children         AlumniChild[]
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime      @updatedAt
+}
+
+model Job {
+  id          String    @id @default(uuid())
+  title       String
+  company     String
+  location    String
+  description String
+  deadline    DateTime?
+  createdAt   DateTime  @default(now())
+}
+
+model Event {
+  id          String    @id @default(uuid())
+  title       String
+  description String
+  location    String?
+  startDate   DateTime
+  endDate     DateTime?
+  image       String?
+  createdAt   DateTime  @default(now())
+}
+
+model Donation {
+  id         String   @id @default(uuid())
+  donorName  String
+  amount     Decimal
+  note       String?
+  createdAt  DateTime @default(now())
+}
+
+model News {
+  id        String   @id @default(uuid())
+  title     String
+  slug      String   @unique
+  content   String
+  image     String?
+  createdAt DateTime @default(now())
+}
+
+model TracerStudy {
+  id                String   @id @default(uuid())
+  alumniId          String
+  statusKerja       String?
+  namaPerusahaan    String?
+  jabatan           String?
+  gajiRange         String?
+  kesesuaianJurusan String?
+  isCurrent         Boolean  @default(false)
+  alumni            Alumni   @relation(fields: [alumniId], references: [id], onDelete: Cascade)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model AlumniEducation {
+  id           String   @id @default(uuid())
+  alumniId     String
+  jenjang      String   // e.g. D3, S1, S2, S3
+  institusi    String
+  programStudi String?
+  tahunMasuk   Int?
+  tahunLulus   Int?
+  alumni       Alumni   @relation(fields: [alumniId], references: [id], onDelete: Cascade)
+}
+
+model AlumniJob {
+  id           String   @id @default(uuid())
+  alumniId     String
+  perusahaan   String
+  jabatan      String
+  tahunMulai   Int?
+  tahunSelesai Int?     // null means current
+  isCurrent    Boolean  @default(false)
+  alumni       Alumni   @relation(fields: [alumniId], references: [id], onDelete: Cascade)
+}
+
+model AlumniChild {
+  id        String   @id @default(uuid())
+  alumniId  String
+  nama      String
+  alumni    Alumni   @relation(fields: [alumniId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Setting {
+  id    String @id @default(uuid())
+  key   String @unique
+  value String
+}
