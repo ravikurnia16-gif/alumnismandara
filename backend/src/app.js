@@ -44,7 +44,7 @@ const frontendDistPath = path.join(__dirname, '../public');
 app.use(express.static(frontendDistPath));
 
 // Handle React routing, return all requests not matching API routes to index.html
-app.get('*', (req, res) => {
+app.get(/.*/, (req, res) => {
   res.sendFile(path.join(frontendDistPath, 'index.html'));
 });
 
