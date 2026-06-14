@@ -11,6 +11,8 @@ export default function LandingPage() {
   const [selectedNews, setSelectedNews] = useState(null);
   const [settings, setSettings] = useState({ schoolName: "SMAN 2 HARAU", schoolLogo: "" });
 
+  const [statsLoading, setStatsLoading] = useState(true);
+
   useEffect(() => {
     axios.get("/api/public/stats")
       .then(res => {
@@ -18,7 +20,8 @@ export default function LandingPage() {
           setStats(res.data.data);
         }
       })
-      .catch(err => console.error("Error fetching stats:", err));
+      .catch(err => console.error("Error fetching stats:", err))
+      .finally(() => setStatsLoading(false));
 
     axios.get("/api/public/news/latest")
       .then(res => {
@@ -123,7 +126,11 @@ export default function LandingPage() {
                 <div className="p-3 bg-gradient-to-br from-primary/20 to-secondary/20 rounded-full mb-3 text-primary">
                   <stat.icon className="h-6 w-6" />
                 </div>
-                <h3 className="text-3xl font-bold text-gray-900 dark:text-white">{stat.value}</h3>
+                <h3 className="text-3xl font-bold text-gray-900 dark:text-white">
+                  {statsLoading ? (
+                    <span className="inline-block w-8 h-8 rounded-full border-4 border-orange-200 border-t-orange-500 animate-spin"></span>
+                  ) : stat.value}
+                </h3>
                 <p className="text-sm font-medium text-gray-500 dark:text-gray-400">{stat.label}</p>
               </div>
             ))}

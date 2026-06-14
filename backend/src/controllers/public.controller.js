@@ -184,7 +184,12 @@ const getPublicStats = async (req, res) => {
   try {
     const totalAlumni = await prisma.alumni.count();
     const angkatanList = await prisma.alumni.findMany({
-      where: { angkatan: { not: null } },
+      where: { 
+        angkatan: { 
+          not: null,
+          gt: 0
+        } 
+      },
       select: { angkatan: true },
       distinct: ['angkatan']
     });
@@ -192,6 +197,7 @@ const getPublicStats = async (req, res) => {
 
     res.status(200).json({ status: 'success', data: { totalAlumni, totalAngkatan } });
   } catch (error) {
+    console.error('getPublicStats error:', error);
     res.status(500).json({ status: 'error', message: error.message });
   }
 };
