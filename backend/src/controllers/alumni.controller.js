@@ -295,7 +295,7 @@ const getDashboardStats = async (req, res) => {
     try {
       const educationRecords = await prisma.alumniEducation.findMany({
         where: {
-          institusi: { not: null }
+          institusi: { not: "" }
         },
         select: {
           institusi: true,
