@@ -2,19 +2,29 @@ import { Navigate } from 'react-router-dom';
 
 const ProtectedRoute = ({ children, allowedRoles }) => {
   const token = localStorage.getItem('token');
-  const userRole = localStorage.getItem('role');
+  const userStr = localStorage.getItem('user');
+  let userRole = null;
+  
+  if (userStr) {
+    try {
+      const user = JSON.parse(userStr);
+      userRole = user.role;
+    } catch (e) {
+      console.error("Failed to parse user from localStorage");
+    }
+  }
 
-  if (!token) {
-    // If not logged in, redirect to login page
+  if (!token || !userRole) {
+    // If not logged in or invalid user data, redirect to login page
     return <Navigate to="/login" replace />;
   }
 
   if (allowedRoles && !allowedRoles.includes(userRole)) {
-    // If logged in but role doesn't match (e.g. ALUMNI trying to access Admin dashboard)
+    // If logged in but role doesn't match
     if (userRole === 'ALUMNI') {
       return <Navigate to="/dashboard" replace />;
     }
-    // If admin trying to access alumni dashboard, we can let them or redirect to admin
+    // Otherwise redirect to admin
     return <Navigate to="/admin" replace />;
   }
 
