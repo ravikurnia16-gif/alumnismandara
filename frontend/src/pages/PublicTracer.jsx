@@ -61,6 +61,7 @@ const tracerSchema = z.object({
     programStudi: z.string().optional(),
     tahunMasuk: z.string().optional(),
     tahunLulus: z.string().optional(),
+    isCurrent: z.boolean().default(false)
   })).optional(),
 
   // Riwayat Pekerjaan (Array)
@@ -697,7 +698,7 @@ export default function PublicTracer() {
             <section>
               <h3 className="text-xl font-semibold border-b pb-2 mb-4 flex justify-between items-center">
                 3. Riwayat Pendidikan Lanjutan
-                <Button type="button" variant="outline" size="sm" onClick={() => appendEd({ jenjang: "", institusi: "", programStudi: "", tahunMasuk: "", tahunLulus: "" })}>
+                <Button type="button" variant="outline" size="sm" onClick={() => appendEd({ jenjang: "", institusi: "", programStudi: "", tahunMasuk: "", tahunLulus: "", isCurrent: false })}>
                   <Plus className="w-4 h-4 mr-1" /> Tambah
                 </Button>
               </h3>
@@ -734,7 +735,7 @@ export default function PublicTracer() {
                       <label className="block text-xs font-medium">Program Studi / Jurusan</label>
                       <Input {...register(`educations.${index}.programStudi`)} className="mt-1" />
                     </div>
-                    <div className="flex space-x-2">
+                    <div className="flex items-end space-x-4">
                       <div className="flex-1">
                         <label className="block text-xs font-medium">Thn Masuk</label>
                         <select {...register(`educations.${index}.tahunMasuk`)} className="w-full mt-1 border border-slate-300 rounded-md p-2 text-sm">
@@ -748,6 +749,10 @@ export default function PublicTracer() {
                           <option value="">Pilih Tahun</option>
                           {lulusYears.map(y => <option key={`ed-lulus-${y}`} value={y}>{y}</option>)}
                         </select>
+                      </div>
+                      <div className="flex items-center pb-2">
+                        <input type="checkbox" {...register(`educations.${index}.isCurrent`)} className="mr-2" />
+                        <span className="text-xs">Masih Kuliah</span>
                       </div>
                     </div>
                   </div>

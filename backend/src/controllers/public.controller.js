@@ -109,6 +109,7 @@ const submitPublicTracer = async (req, res) => {
               programStudi: ed.programStudi,
               tahunMasuk: ed.tahunMasuk ? parseInt(ed.tahunMasuk) : null,
               tahunLulus: ed.tahunLulus ? parseInt(ed.tahunLulus) : null,
+              isCurrent: ed.isCurrent || false,
             }))
           },
           jobs: {

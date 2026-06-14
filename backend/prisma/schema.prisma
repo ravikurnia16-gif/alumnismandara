@@ -134,6 +134,7 @@ model AlumniEducation {
   programStudi String?
   tahunMasuk   Int?
   tahunLulus   Int?
+  isCurrent    Boolean  @default(false)
   alumni       Alumni   @relation(fields: [alumniId], references: [id], onDelete: Cascade)
 }
 

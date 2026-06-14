@@ -508,7 +508,7 @@ export default function ProfileEditor() {
             <GraduationCap className="w-5 h-5 text-orange-500 mr-2" />
             Riwayat Pendidikan Tinggi
           </h3>
-          <Button type="button" onClick={() => appendEducation({ jenjang: "", institusi: "", programStudi: "", tahunMasuk: "", tahunLulus: "" })} size="sm" variant="outline" className="border-orange-500 text-orange-500 hover:bg-orange-50">
+          <Button type="button" onClick={() => appendEducation({ jenjang: "", institusi: "", programStudi: "", tahunMasuk: "", tahunLulus: "", isCurrent: false })} size="sm" variant="outline" className="border-orange-500 text-orange-500 hover:bg-orange-50">
             <Plus className="w-4 h-4 mr-1" />
             Tambah Pendidikan
           </Button>
@@ -545,14 +545,18 @@ export default function ProfileEditor() {
                   <Input {...register(`educations.${idx}.programStudi`)} placeholder="Contoh: Ilmu Komputer" />
                 </div>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">Tahun Masuk</label>
                   <Input type="number" {...register(`educations.${idx}.tahunMasuk`)} placeholder="Tahun Masuk" />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Tahun Lulus (Kosongkan jika masih berjalan)</label>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Tahun Lulus</label>
                   <Input type="number" {...register(`educations.${idx}.tahunLulus`)} placeholder="Tahun Lulus" />
+                </div>
+                <div className="flex items-center pt-6">
+                  <input type="checkbox" {...register(`educations.${idx}.isCurrent`)} className="h-4 w-4 text-orange-500 rounded border-gray-300 focus:ring-orange-500" />
+                  <label className="ml-2 block text-sm text-slate-700">Masih Kuliah</label>
                 </div>
               </div>
             </div>
