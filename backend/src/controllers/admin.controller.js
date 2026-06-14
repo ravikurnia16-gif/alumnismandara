@@ -9,7 +9,9 @@ const createAlumni = async (req, res) => {
     const {
       name, email,
       nisn, angkatan, tahunLulus, tempatLahir, tanggalLahir,
-      alamat, negara, provinsi, kota, kecamatan, kelurahan, latitude, longitude, googleMapsLink, noHp,
+      alamat, negara, provinsi, kota, kecamatan, kelurahan, 
+      alamatDomisili, negaraDomisili, provinsiDomisili, kotaDomisili, kecamatanDomisili, kelurahanDomisili,
+      latitude, longitude, googleMapsLink, noHp,
       jurusan, namaAsrama, statusNikah, namaPasangan, jumlahAnak, bio,
       linkedin, instagram, facebook, tiktok,
       educations, jobs, children
@@ -51,6 +53,12 @@ const createAlumni = async (req, res) => {
           kota,
           kecamatan,
           kelurahan,
+          alamatDomisili,
+          negaraDomisili,
+          provinsiDomisili,
+          kotaDomisili,
+          kecamatanDomisili,
+          kelurahanDomisili,
           latitude: latitude ? parseFloat(latitude) : null,
           longitude: longitude ? parseFloat(longitude) : null,
           googleMapsLink,
@@ -107,7 +115,9 @@ const updateAlumni = async (req, res) => {
     const {
       name, email, // User fields
       nisn, angkatan, tahunLulus, tempatLahir, tanggalLahir,
-      alamat, negara, provinsi, kota, kecamatan, kelurahan, latitude, longitude, googleMapsLink, noHp,
+      alamat, negara, provinsi, kota, kecamatan, kelurahan, 
+      alamatDomisili, negaraDomisili, provinsiDomisili, kotaDomisili, kecamatanDomisili, kelurahanDomisili,
+      latitude, longitude, googleMapsLink, noHp,
       jurusan, namaAsrama, statusNikah, namaPasangan, jumlahAnak, bio,
       linkedin, instagram, facebook, tiktok,
       educations = [], jobs = [], children = []
@@ -149,6 +159,12 @@ const updateAlumni = async (req, res) => {
           ...(kota !== undefined && { kota }),
           ...(kecamatan !== undefined && { kecamatan }),
           ...(kelurahan !== undefined && { kelurahan }),
+          ...(alamatDomisili !== undefined && { alamatDomisili }),
+          ...(negaraDomisili !== undefined && { negaraDomisili }),
+          ...(provinsiDomisili !== undefined && { provinsiDomisili }),
+          ...(kotaDomisili !== undefined && { kotaDomisili }),
+          ...(kecamatanDomisili !== undefined && { kecamatanDomisili }),
+          ...(kelurahanDomisili !== undefined && { kelurahanDomisili }),
           ...(latitude !== undefined && { latitude: latitude ? parseFloat(latitude) : null }),
           ...(longitude !== undefined && { longitude: longitude ? parseFloat(longitude) : null }),
           ...(googleMapsLink !== undefined && { googleMapsLink }),

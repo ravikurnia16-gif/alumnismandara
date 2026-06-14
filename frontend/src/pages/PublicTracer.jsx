@@ -41,6 +41,13 @@ const tracerSchema = z.object({
   kecamatan: z.string().optional(),
   kelurahan: z.string().optional(),
   alamat: z.string().optional(),
+  isDomisiliSame: z.boolean().optional(),
+  negaraDomisili: z.string().optional(),
+  provinsiDomisili: z.string().optional(),
+  kotaDomisili: z.string().optional(),
+  kecamatanDomisili: z.string().optional(),
+  kelurahanDomisili: z.string().optional(),
+  alamatDomisili: z.string().optional(),
   latitude: z.number().nullable().optional(),
   longitude: z.number().nullable().optional(),
   googleMapsLink: z.string().optional(),
@@ -97,7 +104,14 @@ export default function PublicTracer() {
       jumlahAnak: "0",
       educations: [],
       jobs: [],
-      children: []
+      children: [],
+      isDomisiliSame: false,
+      negaraDomisili: "Indonesia",
+      provinsiDomisili: "",
+      kotaDomisili: "",
+      kecamatanDomisili: "",
+      kelurahanDomisili: "",
+      alamatDomisili: ""
     }
   });
 
@@ -118,6 +132,21 @@ export default function PublicTracer() {
 
   const isIndonesia = watch("isIndonesia");
   const jumlahAnak = watch("jumlahAnak");
+  
+  const watchIsDomisiliSame = watch("isDomisiliSame");
+  const watchAlamatAsal = watch(["alamat", "negara", "provinsi", "kota", "kecamatan", "kelurahan"]);
+
+  useEffect(() => {
+    if (watchIsDomisiliSame) {
+      const [alamat, negara, provinsi, kota, kecamatan, kelurahan] = watchAlamatAsal;
+      setValue("alamatDomisili", alamat || "");
+      setValue("negaraDomisili", negara || "");
+      setValue("provinsiDomisili", provinsi || "");
+      setValue("kotaDomisili", kota || "");
+      setValue("kecamatanDomisili", kecamatan || "");
+      setValue("kelurahanDomisili", kelurahan || "");
+    }
+  }, [watchIsDomisiliSame, watchAlamatAsal, setValue]);
 
   // Sync children fields based on jumlahAnak
   useEffect(() => {
@@ -416,7 +445,7 @@ export default function PublicTracer() {
 
             {/* BAGIAN 2: ALAMAT & MAPS */}
             <section>
-              <h3 className="text-xl font-semibold border-b pb-2 mb-4">2. Alamat & Peta Domisili</h3>
+              <h3 className="text-xl font-semibold border-b pb-2 mb-4">2. Alamat Asal</h3>
               
               <div className="mb-4 flex items-center space-x-6">
                 <label className="flex items-center">
@@ -480,8 +509,51 @@ export default function PublicTracer() {
               )}
 
               <div className="mb-4">
-                <label className="block text-sm font-medium">Detail Alamat / Jalan</label>
+                <label className="block text-sm font-medium">Detail Alamat / Jalan Asal</label>
                 <Input {...register("alamat")} className="mt-1" placeholder="Jl. Contoh No 123..." />
+              </div>
+
+              <h3 className="text-xl font-semibold border-b pb-2 mt-8 mb-4">Alamat Domisili (Saat Ini) & Peta</h3>
+              
+              <div className="mb-4 flex items-center">
+                <input 
+                  type="checkbox" 
+                  {...register("isDomisiliSame")} 
+                  id="isDomisiliSameTracer" 
+                  className="h-4 w-4 text-orange-500 border-slate-300 rounded focus:ring-orange-500" 
+                />
+                <label htmlFor="isDomisiliSameTracer" className="ml-2 block text-sm font-medium text-slate-700">
+                  Alamat Domisili sama dengan Alamat Asal
+                </label>
+              </div>
+
+              <div className="mb-4">
+                <label className="block text-sm font-medium">Negara Domisili *</label>
+                <Input {...register("negaraDomisili")} className="mt-1" placeholder="Negara" disabled={watchIsDomisiliSame} />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div>
+                  <label className="block text-sm font-medium">Provinsi Domisili</label>
+                  <Input {...register("provinsiDomisili")} className="mt-1" placeholder="Provinsi" disabled={watchIsDomisiliSame} />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium">Kabupaten/Kota Domisili</label>
+                  <Input {...register("kotaDomisili")} className="mt-1" placeholder="Kota / Kabupaten" disabled={watchIsDomisiliSame} />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium">Kecamatan Domisili</label>
+                  <Input {...register("kecamatanDomisili")} className="mt-1" placeholder="Kecamatan" disabled={watchIsDomisiliSame} />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium">Kelurahan/Desa Domisili</label>
+                  <Input {...register("kelurahanDomisili")} className="mt-1" placeholder="Kelurahan / Desa" disabled={watchIsDomisiliSame} />
+                </div>
+              </div>
+
+              <div className="mb-4">
+                <label className="block text-sm font-medium">Detail Alamat / Jalan Domisili</label>
+                <Input {...register("alamatDomisili")} className="mt-1" placeholder="Jl. Contoh No 123..." disabled={watchIsDomisiliSame} />
               </div>
 
               <div className="mb-4">

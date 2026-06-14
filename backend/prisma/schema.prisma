@@ -39,6 +39,12 @@ model Alumni {
   kota             String?
   kecamatan        String?
   kelurahan        String?
+  alamatDomisili    String?
+  negaraDomisili    String?   @default("Indonesia")
+  provinsiDomisili  String?
+  kotaDomisili      String?
+  kecamatanDomisili String?
+  kelurahanDomisili String?
   latitude         Float?
   longitude        Float?
   googleMapsLink   String?

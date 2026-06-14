@@ -13,6 +13,8 @@ const schema = z.object({
   angkatan: z.string().optional(),
   negara: z.string().optional(),
   kota: z.string().optional(),
+  negaraDomisili: z.string().optional(),
+  kotaDomisili: z.string().optional(),
   statusNikah: z.string().optional(),
   jurusan: z.string().optional(),
   namaAsrama: z.string().optional(),
@@ -27,8 +29,10 @@ export default function AlumniFormDialog({ isOpen, onClose, onSubmit, initialDat
       nisn: "",
       angkatan: "",
       negara: "Indonesia",
-      statusNikah: "",
       kota: "",
+      negaraDomisili: "Indonesia",
+      kotaDomisili: "",
+      statusNikah: "",
       jurusan: "",
       namaAsrama: "",
     }
@@ -42,14 +46,16 @@ export default function AlumniFormDialog({ isOpen, onClose, onSubmit, initialDat
         nisn: initialData.nisn || "",
         angkatan: initialData.angkatan?.toString() || "",
         negara: initialData.negara || "Indonesia",
-        statusNikah: initialData.statusNikah || "",
         kota: initialData.kota || "",
+        negaraDomisili: initialData.negaraDomisili || "Indonesia",
+        kotaDomisili: initialData.kotaDomisili || "",
+        statusNikah: initialData.statusNikah || "",
         jurusan: initialData.jurusan || "",
         namaAsrama: initialData.namaAsrama || "",
       });
     } else {
       reset({
-        name: "", email: "", nisn: "", angkatan: "", negara: "Indonesia", statusNikah: "", kota: "", jurusan: "", namaAsrama: ""
+        name: "", email: "", nisn: "", angkatan: "", negara: "Indonesia", kota: "", negaraDomisili: "Indonesia", kotaDomisili: "", statusNikah: "", jurusan: "", namaAsrama: ""
       });
     }
   }, [initialData, reset, isOpen]);
@@ -89,12 +95,22 @@ export default function AlumniFormDialog({ isOpen, onClose, onSubmit, initialDat
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="text-sm font-medium">Kota Domisili</label>
+              <label className="text-sm font-medium">Kota Asal</label>
               <Input {...register("kota")} placeholder="Kota" />
             </div>
             <div>
-              <label className="text-sm font-medium">Negara Domisili</label>
+              <label className="text-sm font-medium">Negara Asal</label>
               <Input {...register("negara")} placeholder="Indonesia" />
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="text-sm font-medium">Kota Domisili</label>
+              <Input {...register("kotaDomisili")} placeholder="Kota Domisili" />
+            </div>
+            <div>
+              <label className="text-sm font-medium">Negara Domisili</label>
+              <Input {...register("negaraDomisili")} placeholder="Indonesia" />
             </div>
           </div>
           

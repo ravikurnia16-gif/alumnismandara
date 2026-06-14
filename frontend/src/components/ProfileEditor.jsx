@@ -26,6 +26,13 @@ export default function ProfileEditor() {
       kota: "",
       kecamatan: "",
       kelurahan: "",
+      alamatDomisili: "",
+      negaraDomisili: "Indonesia",
+      provinsiDomisili: "",
+      kotaDomisili: "",
+      kecamatanDomisili: "",
+      kelurahanDomisili: "",
+      isDomisiliSame: false,
       latitude: "",
       longitude: "",
       googleMapsLink: "",
@@ -91,6 +98,13 @@ export default function ProfileEditor() {
           kota: d.kota || "",
           kecamatan: d.kecamatan || "",
           kelurahan: d.kelurahan || "",
+          alamatDomisili: d.alamatDomisili || "",
+          negaraDomisili: d.negaraDomisili || "Indonesia",
+          provinsiDomisili: d.provinsiDomisili || "",
+          kotaDomisili: d.kotaDomisili || "",
+          kecamatanDomisili: d.kecamatanDomisili || "",
+          kelurahanDomisili: d.kelurahanDomisili || "",
+          isDomisiliSame: false,
           latitude: d.latitude || "",
           longitude: d.longitude || "",
           googleMapsLink: d.googleMapsLink || "",
@@ -133,6 +147,21 @@ export default function ProfileEditor() {
     setValue("longitude", lng);
   };
 
+  const watchIsDomisiliSame = watch("isDomisiliSame");
+  const watchAlamatAsal = watch(["alamat", "negara", "provinsi", "kota", "kecamatan", "kelurahan"]);
+
+  useEffect(() => {
+    if (watchIsDomisiliSame) {
+      const [alamat, negara, provinsi, kota, kecamatan, kelurahan] = watchAlamatAsal;
+      setValue("alamatDomisili", alamat);
+      setValue("negaraDomisili", negara);
+      setValue("provinsiDomisili", provinsi);
+      setValue("kotaDomisili", kota);
+      setValue("kecamatanDomisili", kecamatan);
+      setValue("kelurahanDomisili", kelurahan);
+    }
+  }, [watchIsDomisiliSame, watchAlamatAsal, setValue]);
+
   const onSubmit = async (data) => {
     setSaving(true);
     try {
@@ -141,7 +170,7 @@ export default function ProfileEditor() {
       
       // Append normal fields
       Object.keys(data).forEach(key => {
-        if (key !== "educations" && key !== "jobs" && key !== "children") {
+        if (key !== "educations" && key !== "jobs" && key !== "children" && key !== "isDomisiliSame") {
           formData.append(key, data[key]);
         }
       });
@@ -273,25 +302,31 @@ export default function ProfileEditor() {
       <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 space-y-6">
         <h3 className="text-lg font-bold text-slate-800 flex items-center border-b pb-3 border-slate-100">
           <MapPin className="w-5 h-5 text-orange-500 mr-2" />
-          Domisili & Lokasi Peta
+          Alamat Asal
         </h3>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Negara</label>
-            <Input {...register("negara")} placeholder="Negara" />
+            <label className="block text-sm font-medium text-slate-700 mb-1">Jalan / Detail Alamat Asal</label>
+            <Input {...register("alamat")} placeholder="Jl. Contoh No 123..." />
           </div>
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Provinsi</label>
-            <Input {...register("provinsi")} placeholder="Provinsi" />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Kota / Kabupaten</label>
-            <Input {...register("kota")} placeholder="Kota / Kabupaten" />
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Negara</label>
+              <Input {...register("negara")} placeholder="Negara" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Provinsi</label>
+              <Input {...register("provinsi")} placeholder="Provinsi" />
+            </div>
           </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">Kota / Kabupaten</label>
+            <Input {...register("kota")} placeholder="Kota / Kabupaten" />
+          </div>
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1">Kecamatan</label>
             <Input {...register("kecamatan")} placeholder="Kecamatan" />
@@ -300,10 +335,63 @@ export default function ProfileEditor() {
             <label className="block text-sm font-medium text-slate-700 mb-1">Kelurahan / Desa</label>
             <Input {...register("kelurahan")} placeholder="Kelurahan" />
           </div>
+        </div>
+      </div>
+
+      {/* Alamat Domisili */}
+      <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 space-y-6">
+        <h3 className="text-lg font-bold text-slate-800 flex items-center border-b pb-3 border-slate-100">
+          <MapPin className="w-5 h-5 text-orange-500 mr-2" />
+          Alamat Domisili (Saat Ini)
+        </h3>
+
+        <div className="flex items-center mb-4">
+          <input 
+            type="checkbox" 
+            {...register("isDomisiliSame")} 
+            id="isDomisiliSame" 
+            className="h-4 w-4 text-orange-500 border-slate-300 rounded focus:ring-orange-500" 
+          />
+          <label htmlFor="isDomisiliSame" className="ml-2 block text-sm font-medium text-slate-700">
+            Alamat Domisili sama dengan Alamat Asal
+          </label>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Link Google Maps (Opsional)</label>
-            <Input {...register("googleMapsLink")} placeholder="https://maps.app.goo.gl/..." />
+            <label className="block text-sm font-medium text-slate-700 mb-1">Jalan / Detail Alamat Domisili</label>
+            <Input {...register("alamatDomisili")} placeholder="Jl. Contoh No 123..." disabled={watchIsDomisiliSame} />
           </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Negara Domisili</label>
+              <Input {...register("negaraDomisili")} placeholder="Negara" disabled={watchIsDomisiliSame} />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Provinsi Domisili</label>
+              <Input {...register("provinsiDomisili")} placeholder="Provinsi" disabled={watchIsDomisiliSame} />
+            </div>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">Kota / Kabupaten Domisili</label>
+            <Input {...register("kotaDomisili")} placeholder="Kota / Kabupaten" disabled={watchIsDomisiliSame} />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">Kecamatan Domisili</label>
+            <Input {...register("kecamatanDomisili")} placeholder="Kecamatan" disabled={watchIsDomisiliSame} />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">Kelurahan Domisili</label>
+            <Input {...register("kelurahanDomisili")} placeholder="Kelurahan" disabled={watchIsDomisiliSame} />
+          </div>
+        </div>
+
+        <div className="pt-4 border-t border-slate-100">
+          <label className="block text-sm font-medium text-slate-700 mb-1">Link Google Maps (Opsional)</label>
+          <Input {...register("googleMapsLink")} placeholder="https://maps.app.goo.gl/..." className="mb-6" />
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

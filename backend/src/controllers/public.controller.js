@@ -9,7 +9,9 @@ const submitPublicTracer = async (req, res) => {
       // Data Identitas & Alumni
       name, email, noHp,
       nisn, angkatan, namaAngkatan, tahunLulus, tempatLahir, tanggalLahir,
-      alamat, negara, provinsi, kota, kecamatan, kelurahan, latitude, longitude, googleMapsLink,
+      alamat, negara, provinsi, kota, kecamatan, kelurahan, 
+      alamatDomisili, negaraDomisili, provinsiDomisili, kotaDomisili, kecamatanDomisili, kelurahanDomisili,
+      latitude, longitude, googleMapsLink,
       jurusanSma, namaAsrama, statusNikah, namaPasangan, jumlahAnak, bio,
       linkedin, instagram, facebook, tiktok, foto,
 
@@ -77,6 +79,12 @@ const submitPublicTracer = async (req, res) => {
           kota,
           kecamatan,
           kelurahan,
+          alamatDomisili,
+          negaraDomisili,
+          provinsiDomisili,
+          kotaDomisili,
+          kecamatanDomisili,
+          kelurahanDomisili,
           latitude: latitude ? parseFloat(latitude) : null,
           longitude: longitude ? parseFloat(longitude) : null,
           googleMapsLink,
