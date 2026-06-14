@@ -182,22 +182,36 @@ const getDaftarAsrama = async (req, res) => {
 
 const getPublicStats = async (req, res) => {
   try {
-    const totalAlumni = await prisma.alumni.count();
-    const angkatanList = await prisma.alumni.findMany({
-      where: { 
-        angkatan: { 
-          not: null,
-          gt: 0
-        } 
-      },
-      select: { angkatan: true },
-      distinct: ['angkatan']
-    });
-    const totalAngkatan = angkatanList.length;
+    let totalAlumni = 0;
+    let totalAngkatan = 0;
+
+    try {
+      totalAlumni = await prisma.alumni.count();
+    } catch (e) {
+      console.error('alumni.count() failed:', e.message);
+      // fallback: try findMany
+      try {
+        const all = await prisma.alumni.findMany({ select: { id: true } });
+        totalAlumni = all.length;
+      } catch (e2) {
+        console.error('alumni.findMany() fallback also failed:', e2.message);
+      }
+    }
+
+    try {
+      const angkatanList = await prisma.alumni.findMany({
+        where: { angkatan: { gt: 0 } },
+        select: { angkatan: true },
+        distinct: ['angkatan']
+      });
+      totalAngkatan = angkatanList.length;
+    } catch (e) {
+      console.error('angkatan groupBy failed:', e.message);
+    }
 
     res.status(200).json({ status: 'success', data: { totalAlumni, totalAngkatan } });
   } catch (error) {
-    console.error('getPublicStats error:', error);
+    console.error('getPublicStats fatal error:', error);
     res.status(500).json({ status: 'error', message: error.message });
   }
 };
