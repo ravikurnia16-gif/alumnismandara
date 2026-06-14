@@ -15,25 +15,25 @@ const ensureBucket = async () => {
     const exists = await minioClient.bucketExists(BUCKET_NAME);
     if (!exists) {
       await minioClient.makeBucket(BUCKET_NAME);
-      // Set bucket policy to public read
-      const policy = {
-        Version: '2012-10-17',
-        Statement: [
-          {
-            Effect: 'Allow',
-            Principal: { AWS: ['*'] },
-            Action: ['s3:GetObject'],
-            Resource: [`arn:aws:s3:::${BUCKET_NAME}/*`],
-          },
-        ],
-      };
-      await minioClient.setBucketPolicy(BUCKET_NAME, JSON.stringify(policy));
-      console.log(`MinIO bucket '${BUCKET_NAME}' created with public read policy.`);
-    } else {
-      console.log(`MinIO bucket '${BUCKET_NAME}' already exists.`);
+      console.log(`MinIO bucket '${BUCKET_NAME}' created.`);
     }
+    
+    // Set bucket policy to public read (ensure it is always applied)
+    const policy = {
+      Version: '2012-10-17',
+      Statement: [
+        {
+          Effect: 'Allow',
+          Principal: { AWS: ['*'] },
+          Action: ['s3:GetObject'],
+          Resource: [`arn:aws:s3:::${BUCKET_NAME}/*`],
+        },
+      ],
+    };
+    await minioClient.setBucketPolicy(BUCKET_NAME, JSON.stringify(policy));
+    console.log(`MinIO bucket '${BUCKET_NAME}' policy set to public read.`);
   } catch (err) {
-    console.error('MinIO bucket check/create failed:', err.message);
+    console.error('MinIO bucket check/create/policy failed:', err.message);
   }
 };
 
