@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
-import { Users, Briefcase, FileText, CheckCircle, PieChart as PieIcon, MapPin, GraduationCap } from 'lucide-react';
+import { Users, Briefcase, FileText, MapPin, GraduationCap, ChevronDown, ChevronRight } from 'lucide-react';
 import AlumniMap from '../AlumniMap';
 import {
   Table,
@@ -27,6 +27,7 @@ export default function DashboardStats() {
   const [alumniList, setAlumniList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [expandedKampus, setExpandedKampus] = useState(null);
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -70,6 +71,10 @@ export default function DashboardStats() {
     );
   }
 
+  const toggleKampus = (kampusName) => {
+    setExpandedKampus(prev => prev === kampusName ? null : kampusName);
+  };
+
   return (
     <div className="space-y-6 animate-fade-in-up">
       {/* Metric Cards */}
@@ -105,9 +110,8 @@ export default function DashboardStats() {
         </div>
       </div>
 
-      {/* Charts Row 1 */}
+      {/* Charts Row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Bar Chart: Angkatan */}
         <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
           <h3 className="text-lg font-bold text-slate-800 mb-4">Sebaran Alumni per Angkatan</h3>
           <div className="h-72">
@@ -127,7 +131,6 @@ export default function DashboardStats() {
           </div>
         </div>
 
-        {/* Pie Chart: Jurusan */}
         <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
           <h3 className="text-lg font-bold text-slate-800 mb-4">Proporsi Jurusan SMA</h3>
           <div className="h-72">
@@ -162,28 +165,83 @@ export default function DashboardStats() {
 
       {/* Kampus Table Section */}
       <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-        <h3 className="text-lg font-bold text-slate-800 mb-4 flex items-center">
+        <h3 className="text-lg font-bold text-slate-800 mb-1 flex items-center">
           <GraduationCap className="w-5 h-5 text-orange-500 mr-2" />
           Statistik Lulusan Per Kampus
         </h3>
+        <p className="text-xs text-slate-400 mb-4">Klik nama kampus untuk melihat daftar alumni</p>
         {stats.kampusData?.length > 0 ? (
           <div className="border border-slate-200 rounded-xl overflow-hidden">
             <Table>
               <TableHeader className="bg-slate-50">
                 <TableRow>
-                  <TableHead className="w-[80px] font-bold text-slate-700">No</TableHead>
+                  <TableHead className="w-[50px] font-bold text-slate-700">No</TableHead>
                   <TableHead className="font-bold text-slate-700">Nama Kampus</TableHead>
-                  <TableHead className="w-[200px] text-right font-bold text-slate-700">Jumlah Alumni</TableHead>
+                  <TableHead className="w-[160px] text-right font-bold text-slate-700">Jumlah Alumni</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {stats.kampusData.map((kampus, index) => (
-                  <TableRow key={index} className="hover:bg-slate-50 transition-colors">
-                    <TableCell className="font-medium text-slate-600">{index + 1}</TableCell>
-                    <TableCell className="font-bold text-slate-800">{kampus.name}</TableCell>
-                    <TableCell className="text-right font-semibold text-slate-700">{kampus.count} Alumni</TableCell>
-                  </TableRow>
-                ))}
+                {stats.kampusData.map((kampus, index) => {
+                  const isExpanded = expandedKampus === kampus.name;
+                  const alumniArr = kampus.alumni || [];
+                  return (
+                    <>
+                      {/* Row Kampus - clickable */}
+                      <TableRow
+                        key={`kampus-${index}`}
+                        className="cursor-pointer hover:bg-orange-50 transition-colors select-none"
+                        onClick={() => toggleKampus(kampus.name)}
+                      >
+                        <TableCell className="font-medium text-slate-500">{index + 1}</TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            {isExpanded
+                              ? <ChevronDown className="w-4 h-4 text-orange-500 flex-shrink-0" />
+                              : <ChevronRight className="w-4 h-4 text-slate-400 flex-shrink-0" />
+                            }
+                            <span className="font-bold text-slate-800">{kampus.name}</span>
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-right font-semibold text-slate-700">
+                          {kampus.count} Alumni
+                        </TableCell>
+                      </TableRow>
+
+                      {/* Sub-rows: daftar alumni */}
+                      {isExpanded && alumniArr.length > 0 && alumniArr.map((alum, i) => (
+                        <TableRow key={`alum-${index}-${i}`} className="bg-orange-50/60 border-l-4 border-l-orange-300">
+                          <TableCell />
+                          <TableCell className="pl-10 py-2">
+                            <div className="flex items-center gap-3">
+                              <div className="w-6 h-6 rounded-full bg-orange-200 text-orange-700 flex items-center justify-center text-xs font-bold flex-shrink-0">
+                                {i + 1}
+                              </div>
+                              <div>
+                                <p className="text-sm font-semibold text-slate-700">{alum.name}</p>
+                                {alum.prodi && (
+                                  <p className="text-xs text-slate-400">{alum.prodi}</p>
+                                )}
+                              </div>
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-right text-xs text-slate-500 py-2">
+                            {alum.angkatan ? `Angkatan ${alum.angkatan}` : ''}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+
+                      {/* Jika tidak ada data alumni */}
+                      {isExpanded && alumniArr.length === 0 && (
+                        <TableRow key={`no-alum-${index}`} className="bg-orange-50/60">
+                          <TableCell />
+                          <TableCell colSpan={2} className="pl-10 text-sm text-slate-400 italic py-3">
+                            Data alumni tidak tersedia
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </>
+                  );
+                })}
               </TableBody>
             </Table>
           </div>

@@ -293,14 +293,41 @@ const getDashboardStats = async (req, res) => {
 
     let kampusData = [];
     try {
-      const kampusDataRaw = await prisma.alumniEducation.groupBy({
-        by: ['institusi'],
-        _count: { institusi: true },
+      const educationRecords = await prisma.alumniEducation.findMany({
+        where: {
+          institusi: { not: null }
+        },
+        select: {
+          institusi: true,
+          jenjang: true,
+          programStudi: true,
+          alumni: {
+            select: {
+              id: true,
+              angkatan: true,
+              user: { select: { name: true } }
+            }
+          }
+        }
       });
-      kampusData = kampusDataRaw
-        .filter(item => item.institusi !== null && item.institusi.trim() !== "")
-        .map(item => ({ name: item.institusi, count: item._count.institusi }))
-        .sort((a, b) => b.count - a.count);
+
+      // Group by institusi
+      const kampusMap = {};
+      for (const rec of educationRecords) {
+        const key = (rec.institusi || "").trim();
+        if (!key) continue;
+        if (!kampusMap[key]) kampusMap[key] = { name: key, count: 0, alumni: [] };
+        kampusMap[key].count += 1;
+        if (rec.alumni?.user?.name) {
+          kampusMap[key].alumni.push({
+            name: rec.alumni.user.name,
+            angkatan: rec.alumni.angkatan,
+            prodi: rec.programStudi || rec.jenjang || ''
+          });
+        }
+      }
+
+      kampusData = Object.values(kampusMap).sort((a, b) => b.count - a.count);
     } catch (e) { console.error('Error grouping kampus:', e.message); }
 
     res.json({
