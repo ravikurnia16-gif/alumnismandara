@@ -180,19 +180,21 @@ export default function PublicTracer() {
 
   // Fetch Universities for Datalist
   useEffect(() => {
-    axios.get("http://universities.hipolabs.com/search?country=Indonesia")
+    axios.get("/api/public/universities")
       .then(res => {
-        const processed = res.data.map(u => {
-          let acronym = "";
-          if (u.domains && u.domains.length > 0) {
-            acronym = u.domains[0].split('.')[0].toUpperCase();
-          }
-          return {
-            label: acronym ? `${u.name} (${acronym})` : u.name
-          };
-        });
-        const unique = Array.from(new Set(processed.map(p => p.label))).map(label => ({ label }));
-        setUniversities(unique);
+        if (res.data?.data) {
+          const processed = res.data.data.map(u => {
+            let acronym = "";
+            if (u.domains && u.domains.length > 0) {
+              acronym = u.domains[0].split('.')[0].toUpperCase();
+            }
+            return {
+              label: acronym ? `${u.name} (${acronym})` : u.name
+            };
+          });
+          const unique = Array.from(new Set(processed.map(p => p.label))).map(label => ({ label }));
+          setUniversities(unique);
+        }
       })
       .catch(console.error);
       

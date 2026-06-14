@@ -270,4 +270,27 @@ const getNamaAngkatan = async (req, res) => {
   }
 };
 
-module.exports = { submitPublicTracer, uploadFotoHandler, getDaftarAsrama, getPublicStats, getLatestNews, getPublicDirectory, getNamaAngkatan };
+let cachedUniversities = null;
+let lastFetchUniversities = 0;
+
+const getUniversities = async (req, res) => {
+  try {
+    if (cachedUniversities && Date.now() - lastFetchUniversities < 86400000) {
+      return res.status(200).json({ status: 'success', data: cachedUniversities });
+    }
+    // Menggunakan proxy backend karena hipolabs tidak mendukung HTTPS
+    const response = await fetch("http://universities.hipolabs.com/search?country=Indonesia");
+    if (!response.ok) throw new Error("Failed to fetch universities");
+    const data = await response.json();
+    cachedUniversities = data;
+    lastFetchUniversities = Date.now();
+    res.status(200).json({ status: 'success', data });
+  } catch (error) {
+    if (cachedUniversities) {
+      return res.status(200).json({ status: 'success', data: cachedUniversities });
+    }
+    res.status(500).json({ status: 'error', message: error.message });
+  }
+};
+
+module.exports = { submitPublicTracer, uploadFotoHandler, getDaftarAsrama, getPublicStats, getLatestNews, getPublicDirectory, getNamaAngkatan, getUniversities };
