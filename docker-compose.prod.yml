@@ -24,8 +24,14 @@ services:
       - JWT_SECRET=rahasiaalumnisuperaman123
       # Gunakan DATABASE_URL ini jika sudah switch ke MySQL di prisma/schema.prisma
       - DATABASE_URL=mysql://alumni_user:alumni_password@db:3306/alumni_db
-    volumes:
-      - ./backend/uploads:/app/uploads
+      # MinIO Storage
+      - MINIO_SERVER_URL=https://manajemen-aset-minio.ltdh6w.easypanel.host
+      - MINIO_ENDPOINT=manajemen-aset-minio.ltdh6w.easypanel.host
+      - MINIO_PORT=443
+      - MINIO_USE_SSL=true
+      - MINIO_ACCESS_KEY=admin
+      - MINIO_SECRET_KEY=password
+      - MINIO_BUCKET=smandara
     depends_on:
       - db
     restart: always

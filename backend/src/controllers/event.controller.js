@@ -1,4 +1,6 @@
 const { PrismaClient } = require('@prisma/client');
+const path = require('path');
+const { uploadToMinio } = require('../config/minio');
 const prisma = new PrismaClient();
 
 const getEvents = async (req, res) => {
@@ -29,7 +31,9 @@ const createEvent = async (req, res) => {
     const { title, description, location, startDate, endDate } = req.body;
     let imagePath = null;
     if (req.file) {
-      imagePath = `/uploads/${req.file.filename}`;
+      const ext = path.extname(req.file.originalname) || '.jpg';
+      const filename = `event-${Date.now()}${ext}`;
+      imagePath = await uploadToMinio(req.file.buffer, filename, req.file.mimetype);
     }
 
     const event = await prisma.event.create({
@@ -53,7 +57,9 @@ const updateEvent = async (req, res) => {
     const { title, description, location, startDate, endDate } = req.body;
     let imagePath = undefined;
     if (req.file) {
-      imagePath = `/uploads/${req.file.filename}`;
+      const ext = path.extname(req.file.originalname) || '.jpg';
+      const filename = `event-${Date.now()}${ext}`;
+      imagePath = await uploadToMinio(req.file.buffer, filename, req.file.mimetype);
     }
 
     const event = await prisma.event.update({

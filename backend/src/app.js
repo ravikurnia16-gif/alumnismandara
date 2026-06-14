@@ -2,8 +2,12 @@ const express = require('express');
 const cors = require('cors');
 const path = require('path');
 require('dotenv').config();
+const { ensureBucket } = require('./config/minio');
 
 const app = express();
+
+// Initialize MinIO bucket on startup
+ensureBucket();
 
 app.use(cors());
 app.use(express.json());

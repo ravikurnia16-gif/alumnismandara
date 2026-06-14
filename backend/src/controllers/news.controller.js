@@ -1,4 +1,6 @@
 const { PrismaClient } = require('@prisma/client');
+const path = require('path');
+const { uploadToMinio } = require('../config/minio');
 const prisma = new PrismaClient();
 
 const generateSlug = (title) => {
@@ -21,7 +23,9 @@ const createNews = async (req, res) => {
     const { title, content } = req.body;
     let image = null;
     if (req.file) {
-      image = `/uploads/${req.file.filename}`;
+      const ext = path.extname(req.file.originalname) || '.jpg';
+      const filename = `news-${Date.now()}${ext}`;
+      image = await uploadToMinio(req.file.buffer, filename, req.file.mimetype);
     }
 
     const news = await prisma.news.create({
@@ -50,7 +54,9 @@ const updateNews = async (req, res) => {
     };
 
     if (req.file) {
-      updateData.image = `/uploads/${req.file.filename}`;
+      const ext = path.extname(req.file.originalname) || '.jpg';
+      const filename = `news-${Date.now()}${ext}`;
+      updateData.image = await uploadToMinio(req.file.buffer, filename, req.file.mimetype);
     }
 
     const news = await prisma.news.update({

@@ -1,4 +1,6 @@
 const { PrismaClient } = require('@prisma/client');
+const path = require('path');
+const { uploadToMinio } = require('../config/minio');
 const prisma = new PrismaClient();
 
 const getSettings = async (req, res) => {
@@ -24,7 +26,9 @@ const updateSettings = async (req, res) => {
     const { schoolName } = req.body;
     let logoPath = null;
     if (req.file) {
-      logoPath = `/uploads/${req.file.filename}`;
+      const ext = path.extname(req.file.originalname) || '.png';
+      const filename = `logo-${Date.now()}${ext}`;
+      logoPath = await uploadToMinio(req.file.buffer, filename, req.file.mimetype);
     }
 
     if (schoolName !== undefined) {

@@ -155,12 +155,21 @@ const submitPublicTracer = async (req, res) => {
   }
 };
 
-const uploadFotoHandler = (req, res) => {
+const uploadFotoHandler = async (req, res) => {
   if (!req.file) {
     return res.status(400).json({ status: 'error', message: 'Tidak ada file yang diunggah' });
   }
-  const fileUrl = `/uploads/${req.file.filename}`;
-  res.status(200).json({ status: 'success', data: { url: fileUrl } });
+  try {
+    const { uploadToMinio } = require('../config/minio');
+    const path = require('path');
+    const ext = path.extname(req.file.originalname) || '.jpg';
+    const filename = `foto-${Date.now()}${ext}`;
+    const fileUrl = await uploadToMinio(req.file.buffer, filename, req.file.mimetype);
+    res.status(200).json({ status: 'success', data: { url: fileUrl } });
+  } catch (err) {
+    console.error('MinIO upload error:', err);
+    res.status(500).json({ status: 'error', message: 'Gagal upload foto: ' + err.message });
+  }
 };
 
 const getDaftarAsrama = async (req, res) => {
