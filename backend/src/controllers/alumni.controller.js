@@ -233,46 +233,59 @@ const createOrUpdateAlumni = async (req, res) => {
 
 const getDashboardStats = async (req, res) => {
   try {
-    const totalAlumni = await prisma.alumni.count();
-    
-    const angkatanDataRaw = await prisma.alumni.groupBy({
-      by: ['angkatan'],
-      _count: { angkatan: true },
-    });
-    
-    const angkatanData = angkatanDataRaw
-      .filter(item => item.angkatan !== null && item.angkatan !== 0)
-      .map(item => ({ name: item.angkatan.toString(), count: item._count.angkatan }))
-      .sort((a, b) => parseInt(a.name) - parseInt(b.name));
+    // Each query wrapped independently so one failure doesn't crash the whole endpoint
+    let totalAlumni = 0;
+    let angkatanData = [];
+    let jurusanData = [];
+    let statusKerjaData = [];
+    let kesesuaianData = [];
+    let totalAngkatan = 0;
 
-    const totalAngkatan = angkatanData.length;
+    try {
+      totalAlumni = await prisma.alumni.count();
+    } catch (e) { console.error('Error counting alumni:', e.message); }
 
-    const jurusanDataRaw = await prisma.alumni.groupBy({
-      by: ['jurusan'],
-      _count: { jurusan: true },
-    });
-    
-    const jurusanData = jurusanDataRaw
-      .filter(item => item.jurusan !== null && item.jurusan !== "")
-      .map(item => ({ name: item.jurusan, count: item._count.jurusan }));
+    try {
+      const angkatanDataRaw = await prisma.alumni.groupBy({
+        by: ['angkatan'],
+        _count: { angkatan: true },
+      });
+      angkatanData = angkatanDataRaw
+        .filter(item => item.angkatan !== null && item.angkatan !== 0)
+        .map(item => ({ name: item.angkatan.toString(), count: item._count.angkatan }))
+        .sort((a, b) => parseInt(a.name) - parseInt(b.name));
+      totalAngkatan = angkatanData.length;
+    } catch (e) { console.error('Error grouping angkatan:', e.message); }
 
-    const statusKerjaRaw = await prisma.tracerStudy.groupBy({
-      by: ['statusKerja'],
-      _count: { statusKerja: true },
-    });
-    
-    const statusKerjaData = statusKerjaRaw
-      .filter(item => item.statusKerja !== null && item.statusKerja !== "")
-      .map(item => ({ name: item.statusKerja, count: item._count.statusKerja }));
+    try {
+      const jurusanDataRaw = await prisma.alumni.groupBy({
+        by: ['jurusan'],
+        _count: { jurusan: true },
+      });
+      jurusanData = jurusanDataRaw
+        .filter(item => item.jurusan !== null && item.jurusan !== "")
+        .map(item => ({ name: item.jurusan, count: item._count.jurusan }));
+    } catch (e) { console.error('Error grouping jurusan:', e.message); }
 
-    const kesesuaianRaw = await prisma.tracerStudy.groupBy({
-      by: ['kesesuaianJurusan'],
-      _count: { kesesuaianJurusan: true },
-    });
+    try {
+      const statusKerjaRaw = await prisma.tracerStudy.groupBy({
+        by: ['statusKerja'],
+        _count: { statusKerja: true },
+      });
+      statusKerjaData = statusKerjaRaw
+        .filter(item => item.statusKerja !== null && item.statusKerja !== "")
+        .map(item => ({ name: item.statusKerja, count: item._count.statusKerja }));
+    } catch (e) { console.error('Error grouping statusKerja:', e.message); }
 
-    const kesesuaianData = kesesuaianRaw
-      .filter(item => item.kesesuaianJurusan !== null && item.kesesuaianJurusan !== "")
-      .map(item => ({ name: item.kesesuaianJurusan, count: item._count.kesesuaianJurusan }));
+    try {
+      const kesesuaianRaw = await prisma.tracerStudy.groupBy({
+        by: ['kesesuaianJurusan'],
+        _count: { kesesuaianJurusan: true },
+      });
+      kesesuaianData = kesesuaianRaw
+        .filter(item => item.kesesuaianJurusan !== null && item.kesesuaianJurusan !== "")
+        .map(item => ({ name: item.kesesuaianJurusan, count: item._count.kesesuaianJurusan }));
+    } catch (e) { console.error('Error grouping kesesuaian:', e.message); }
 
     res.json({
       status: 'success',

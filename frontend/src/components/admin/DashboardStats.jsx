@@ -17,6 +17,7 @@ export default function DashboardStats() {
   });
   const [alumniList, setAlumniList] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -39,6 +40,7 @@ export default function DashboardStats() {
         }
       } catch (error) {
         console.error("Error fetching stats or directory", error);
+        setError(`Gagal memuat data: ${error.response?.data?.message || error.message}`);
       } finally {
         setLoading(false);
       }
@@ -48,6 +50,15 @@ export default function DashboardStats() {
 
   if (loading) {
     return <div className="flex justify-center items-center h-64"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500"></div></div>;
+  }
+
+  if (error) {
+    return (
+      <div className="bg-red-50 border border-red-200 rounded-xl p-6 text-center">
+        <p className="text-red-600 font-medium">{error}</p>
+        <p className="text-red-400 text-sm mt-1">Silakan deploy ulang server atau hubungi administrator.</p>
+      </div>
+    );
   }
 
   return (
