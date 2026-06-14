@@ -152,7 +152,7 @@ export default function PublicDirectory() {
                       <TableCell>
                         <div className="w-12 h-12 rounded-full border-2 border-slate-200 bg-slate-100 overflow-hidden flex items-center justify-center text-slate-400 font-bold text-lg">
                           {alumni.foto ? (
-                            <img src={`${import.meta.env.VITE_API_URL}${alumni.foto}`} alt={alumni.user?.name} className="w-full h-full object-cover" />
+                            <img src={alumni.foto.startsWith('http') ? alumni.foto : `${import.meta.env.VITE_API_URL || ''}${alumni.foto}`} alt={alumni.user?.name} className="w-full h-full object-cover" />
                           ) : (
                             alumni.user?.name?.charAt(0).toUpperCase()
                           )}

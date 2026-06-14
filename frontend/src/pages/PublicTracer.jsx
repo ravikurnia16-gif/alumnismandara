@@ -11,7 +11,7 @@ import MapPicker from "../components/MapPicker";
 import imageCompression from 'browser-image-compression';
 
 // Emsifa API Wilayah Indonesia
-const API_WILAYAH = "https://www.emsifa.com/api-wilayah-indonesia/api";
+const API_WILAYAH = "https://emsifa.github.io/api-wilayah-indonesia/api";
 
 const tracerSchema = z.object({
   name: z.string().min(1, "Nama wajib diisi"),
@@ -317,14 +317,188 @@ export default function PublicTracer() {
     }
   };
 
+  const [isGeocodingAsal, setIsGeocodingAsal] = useState(false);
+  const [isGeocodingDomisili, setIsGeocodingDomisili] = useState(false);
+
+  // Normalize name by removing common prefixes for better matching
+  const normalizeWilayah = (str) => (str || "").toLowerCase()
+    .replace(/^(provinsi|propinsi|kabupaten|kab\.|kota|kecamatan|kec\.|kelurahan|desa|nagari)\s*/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  // Score-based best match: exact=100, partial contains=proportional score, min score 45 to accept
+  const bestWilayahMatch = (rawName, list) => {
+    if (!rawName) return null;
+    const rawNorm = normalizeWilayah(rawName);
+    if (!rawNorm) return null;
+
+    let bestScore = -1;
+    let bestItem = null;
+
+    for (const item of list) {
+      const itemNorm = normalizeWilayah(item.name || "");
+      let score = 0;
+
+      if (itemNorm === rawNorm) {
+        score = 100;
+      } else if (rawNorm.includes(itemNorm) && itemNorm.length >= 3) {
+        // rawName contains itemName (e.g. "kota padang" contains "padang")
+        score = Math.round((itemNorm.length / rawNorm.length) * 70);
+      } else if (itemNorm.includes(rawNorm) && rawNorm.length >= 3) {
+        // itemName contains rawName
+        score = Math.round((rawNorm.length / itemNorm.length) * 60);
+      }
+
+      if (score > bestScore) {
+        bestScore = score;
+        bestItem = item;
+      }
+    }
+
+    return bestScore >= 45 ? bestItem : null;
+  };
+
+  const syncRegionFromCoordinates = async (lat, lng, prefix) => {
+    const setGeocoding = prefix === "Domisili" ? setIsGeocodingDomisili : setIsGeocodingAsal;
+    setGeocoding(true);
+    try {
+      let address = null;
+      try {
+        // zoom=14 gives suburb/district-level precision, addressdetails=1 includes all fields
+        const response = await axios.get(
+          `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&accept-language=id&addressdetails=1&zoom=14`,
+          { timeout: 8000 }
+        );
+        address = response.data?.address;
+      } catch (err) {
+        console.warn("Nominatim failed, trying BigDataCloud:", err.message);
+        try {
+          const response = await axios.get(
+            `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lng}&localityLanguage=id`,
+            { timeout: 8000 }
+          );
+          const bdData = response.data;
+          if (bdData) {
+            let state = "", city = "", suburb = "", village = "";
+            if (bdData.localityInfo?.administrative) {
+              const admin = bdData.localityInfo.administrative;
+              const provObj = admin.find(a => a.adminLevel === 4);
+              const cityObj = admin.find(a => a.adminLevel === 5);
+              state = provObj ? provObj.name : "";
+              city = cityObj ? cityObj.name : "";
+            }
+            if (bdData.localityInfo?.informative) {
+              const inf = bdData.localityInfo.informative;
+              const kecObj = inf.find(a => a.description?.toLowerCase().includes("kecamatan"));
+              const kelObj = inf.find(a => a.description?.toLowerCase().includes("kelurahan") || a.description?.toLowerCase().includes("desa"));
+              suburb = kecObj ? kecObj.name : (bdData.locality || "");
+              village = kelObj ? kelObj.name : "";
+            }
+            address = {
+              state: state || bdData.principalSubdivision || "",
+              city: city || bdData.city || "",
+              suburb,
+              village
+            };
+          }
+        } catch (bdErr) {
+          console.error("BigDataCloud fallback also failed:", bdErr.message);
+        }
+      }
+
+      if (!address) return;
+
+      const rawProv = address.state || "";
+      // Collect multiple candidates for each level (ordered by priority)
+      const rawKotaCandidates = [
+        address.city, address.county, address.municipality, address.town, address.city_district
+      ].filter(Boolean);
+      const rawKecCandidates = [
+        address.suburb, address.district, address.city_district, address.quarter
+      ].filter(Boolean);
+      const rawKelCandidates = [
+        address.village, address.town, address.hamlet, address.neighbourhood
+      ].filter(Boolean);
+
+      if (!rawProv) return;
+
+      let provList = provinces;
+      if (provList.length === 0) {
+        const provRes = await axios.get(`${API_WILAYAH}/provinces.json`);
+        provList = provRes.data;
+        setProvinces(provList);
+      }
+
+      const matchedProv = bestWilayahMatch(rawProv, provList);
+      if (!matchedProv) return;
+
+      const provNameField = prefix === "Domisili" ? "provinsiDomisili" : "provinsi";
+      setValue(provNameField, matchedProv.name);
+
+      const regRes = await axios.get(`${API_WILAYAH}/regencies/${matchedProv.id}.json`);
+      const regList = regRes.data;
+      if (prefix === "Domisili") setDomisiliRegencies(regList);
+      else setRegencies(regList);
+
+      // Try each kota candidate
+      let matchedReg = null;
+      for (const candidate of rawKotaCandidates) {
+        matchedReg = bestWilayahMatch(candidate, regList);
+        if (matchedReg) break;
+      }
+      if (!matchedReg) return;
+
+      const regNameField = prefix === "Domisili" ? "kotaDomisili" : "kota";
+      setValue(regNameField, matchedReg.name);
+
+      const distRes = await axios.get(`${API_WILAYAH}/districts/${matchedReg.id}.json`);
+      const distList = distRes.data;
+      if (prefix === "Domisili") setDomisiliDistricts(distList);
+      else setDistricts(distList);
+
+      // Try each kecamatan candidate
+      let matchedDist = null;
+      for (const candidate of rawKecCandidates) {
+        matchedDist = bestWilayahMatch(candidate, distList);
+        if (matchedDist) break;
+      }
+      if (!matchedDist) return;
+
+      const distNameField = prefix === "Domisili" ? "kecamatanDomisili" : "kecamatan";
+      setValue(distNameField, matchedDist.name);
+
+      const vilRes = await axios.get(`${API_WILAYAH}/villages/${matchedDist.id}.json`);
+      const vilList = vilRes.data;
+      if (prefix === "Domisili") setDomisiliVillages(vilList);
+      else setVillages(vilList);
+
+      // Try each kelurahan candidate
+      let matchedVil = null;
+      for (const candidate of rawKelCandidates) {
+        matchedVil = bestWilayahMatch(candidate, vilList);
+        if (matchedVil) break;
+      }
+      if (matchedVil) {
+        const vilNameField = prefix === "Domisili" ? "kelurahanDomisili" : "kelurahan";
+        setValue(vilNameField, matchedVil.name);
+      }
+    } catch (error) {
+      console.error("Geocoding or matching failed:", error);
+    } finally {
+      setGeocoding(false);
+    }
+  };
+
   const handleLocationAsalSelect = (lat, lng) => {
     setValue("latitudeAsal", lat);
     setValue("longitudeAsal", lng);
+    syncRegionFromCoordinates(lat, lng, "");
   };
 
   const handleLocationDomisiliSelect = (lat, lng) => {
     setValue("latitude", lat);
     setValue("longitude", lng);
+    syncRegionFromCoordinates(lat, lng, "Domisili");
   };
 
   const handleFotoChange = async (e) => {
@@ -513,6 +687,11 @@ export default function PublicTracer() {
             <section>
               <h3 className="text-xl font-semibold border-b pb-2 mb-4">2. Alamat Asal</h3>
               
+              <div className="mb-4">
+                <label className="block text-sm font-medium mb-2">Tandai Lokasi di Peta (Opsional)</label>
+                <MapPicker onLocationSelect={handleLocationAsalSelect} />
+              </div>
+
               <div className="mb-4 flex items-center space-x-6">
                 <label className="flex items-center">
                   <input type="radio" value={true} {...register("isIndonesia")} className="mr-2" 
@@ -545,28 +724,44 @@ export default function PublicTracer() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                   <div>
                     <label className="block text-sm font-medium">Provinsi</label>
-                    <select className="w-full mt-1 border border-slate-300 rounded-md p-2" onChange={handleProvinceChange}>
+                    <select 
+                      value={watch("provinsi") || ""} 
+                      className="w-full mt-1 border border-slate-300 rounded-md p-2" 
+                      onChange={handleProvinceChange}
+                    >
                       <option value="">Pilih Provinsi</option>
                       {provinces.map(p => <option key={p.id} data-id={p.id} value={p.name}>{p.name}</option>)}
                     </select>
                   </div>
                   <div>
                     <label className="block text-sm font-medium">Kabupaten/Kota</label>
-                    <select className="w-full mt-1 border border-slate-300 rounded-md p-2" onChange={handleRegencyChange}>
+                    <select 
+                      value={watch("kota") || ""} 
+                      className="w-full mt-1 border border-slate-300 rounded-md p-2" 
+                      onChange={handleRegencyChange}
+                    >
                       <option value="">Pilih Kota/Kabupaten</option>
                       {regencies.map(r => <option key={r.id} data-id={r.id} value={r.name}>{r.name}</option>)}
                     </select>
                   </div>
                   <div>
                     <label className="block text-sm font-medium">Kecamatan</label>
-                    <select className="w-full mt-1 border border-slate-300 rounded-md p-2" onChange={handleDistrictChange}>
+                    <select 
+                      value={watch("kecamatan") || ""} 
+                      className="w-full mt-1 border border-slate-300 rounded-md p-2" 
+                      onChange={handleDistrictChange}
+                    >
                       <option value="">Pilih Kecamatan</option>
                       {districts.map(d => <option key={d.id} data-id={d.id} value={d.name}>{d.name}</option>)}
                     </select>
                   </div>
                   <div>
                     <label className="block text-sm font-medium">Kelurahan/Desa</label>
-                    <select className="w-full mt-1 border border-slate-300 rounded-md p-2" {...register("kelurahan")}>
+                    <select 
+                      value={watch("kelurahan") || ""} 
+                      className="w-full mt-1 border border-slate-300 rounded-md p-2" 
+                      {...register("kelurahan")}
+                    >
                       <option value="">Pilih Kelurahan</option>
                       {villages.map(v => <option key={v.id} value={v.name}>{v.name}</option>)}
                     </select>
@@ -577,11 +772,6 @@ export default function PublicTracer() {
               <div className="mb-4">
                 <label className="block text-sm font-medium">Detail Alamat / Jalan Asal</label>
                 <Input {...register("alamat")} className="mt-1" placeholder="Jl. Contoh No 123..." />
-              </div>
-
-              <div className="mb-4">
-                <label className="block text-sm font-medium mb-2">Atau Tandai Lokasi Peta Alamat Asal</label>
-                <MapPicker onLocationSelect={handleLocationAsalSelect} />
               </div>
 
               <h3 className="text-xl font-semibold border-b pb-2 mt-8 mb-4">Alamat Domisili (Saat Ini) & Peta</h3>
@@ -597,6 +787,17 @@ export default function PublicTracer() {
                   Alamat Domisili sama dengan Alamat Asal
                 </label>
               </div>
+
+              {!watchIsDomisiliSame && (
+                <div className="mb-4">
+                  <label className="block text-sm font-medium mb-2">Tandai Lokasi di Peta (Opsional)</label>
+                  <MapPicker 
+                    defaultLat={watch("latitudeAsal") ? parseFloat(watch("latitudeAsal")) : undefined}
+                    defaultLng={watch("longitudeAsal") ? parseFloat(watch("longitudeAsal")) : undefined}
+                    onLocationSelect={handleLocationDomisiliSelect} 
+                  />
+                </div>
+              )}
 
               <div className="mb-4">
                 <label className="block text-sm font-medium">Negara Domisili *</label>
@@ -643,28 +844,44 @@ export default function PublicTracer() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                   <div>
                     <label className="block text-sm font-medium">Provinsi Domisili</label>
-                    <select className="w-full mt-1 border border-slate-300 rounded-md p-2" onChange={handleDomisiliProvinceChange}>
+                    <select 
+                      value={watch("provinsiDomisili") || ""} 
+                      className="w-full mt-1 border border-slate-300 rounded-md p-2" 
+                      onChange={handleDomisiliProvinceChange}
+                    >
                       <option value="">Pilih Provinsi</option>
                       {provinces.map(p => <option key={`dom-prov-${p.id}`} data-id={p.id} value={p.name}>{p.name}</option>)}
                     </select>
                   </div>
                   <div>
                     <label className="block text-sm font-medium">Kabupaten/Kota Domisili</label>
-                    <select className="w-full mt-1 border border-slate-300 rounded-md p-2" onChange={handleDomisiliRegencyChange}>
+                    <select 
+                      value={watch("kotaDomisili") || ""} 
+                      className="w-full mt-1 border border-slate-300 rounded-md p-2" 
+                      onChange={handleDomisiliRegencyChange}
+                    >
                       <option value="">Pilih Kota/Kabupaten</option>
                       {domisiliRegencies.map(r => <option key={`dom-reg-${r.id}`} data-id={r.id} value={r.name}>{r.name}</option>)}
                     </select>
                   </div>
                   <div>
                     <label className="block text-sm font-medium">Kecamatan Domisili</label>
-                    <select className="w-full mt-1 border border-slate-300 rounded-md p-2" onChange={handleDomisiliDistrictChange}>
+                    <select 
+                      value={watch("kecamatanDomisili") || ""} 
+                      className="w-full mt-1 border border-slate-300 rounded-md p-2" 
+                      onChange={handleDomisiliDistrictChange}
+                    >
                       <option value="">Pilih Kecamatan</option>
                       {domisiliDistricts.map(d => <option key={`dom-dist-${d.id}`} data-id={d.id} value={d.name}>{d.name}</option>)}
                     </select>
                   </div>
                   <div>
                     <label className="block text-sm font-medium">Kelurahan/Desa Domisili</label>
-                    <select className="w-full mt-1 border border-slate-300 rounded-md p-2" {...register("kelurahanDomisili")}>
+                    <select 
+                      value={watch("kelurahanDomisili") || ""} 
+                      className="w-full mt-1 border border-slate-300 rounded-md p-2" 
+                      {...register("kelurahanDomisili")}
+                    >
                       <option value="">Pilih Kelurahan</option>
                       {domisiliVillages.map(v => <option key={`dom-vil-${v.id}`} value={v.name}>{v.name}</option>)}
                     </select>
@@ -687,17 +904,6 @@ export default function PublicTracer() {
                 </div>
                 <p className="text-xs text-slate-500 mt-1">Anda bisa menempelkan link (tautan) dari aplikasi Google Maps di sini.</p>
               </div>
-
-              {!watchIsDomisiliSame && (
-                <div className="mb-4">
-                  <label className="block text-sm font-medium mb-2">Tandai Lokasi Peta Domisili</label>
-                  <MapPicker 
-                    defaultLat={watch("latitudeAsal") ? parseFloat(watch("latitudeAsal")) : undefined}
-                    defaultLng={watch("longitudeAsal") ? parseFloat(watch("longitudeAsal")) : undefined}
-                    onLocationSelect={handleLocationDomisiliSelect} 
-                  />
-                </div>
-              )}
             </section>
 
             {/* BAGIAN 3: PENDIDIKAN LANJUTAN */}

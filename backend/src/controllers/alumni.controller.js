@@ -291,6 +291,18 @@ const getDashboardStats = async (req, res) => {
         .map(item => ({ name: item.kesesuaianJurusan, count: item._count.kesesuaianJurusan }));
     } catch (e) { console.error('Error grouping kesesuaian:', e.message); }
 
+    let kampusData = [];
+    try {
+      const kampusDataRaw = await prisma.alumniEducation.groupBy({
+        by: ['institusi'],
+        _count: { institusi: true },
+      });
+      kampusData = kampusDataRaw
+        .filter(item => item.institusi !== null && item.institusi.trim() !== "")
+        .map(item => ({ name: item.institusi, count: item._count.institusi }))
+        .sort((a, b) => b.count - a.count);
+    } catch (e) { console.error('Error grouping kampus:', e.message); }
+
     res.json({
       status: 'success',
       data: {
@@ -299,7 +311,8 @@ const getDashboardStats = async (req, res) => {
         angkatanData,
         jurusanData,
         statusKerjaData,
-        kesesuaianData
+        kesesuaianData,
+        kampusData
       }
     });
   } catch (error) {

@@ -91,7 +91,7 @@ export default function AlumniDirectory() {
               <div className="bg-slate-800 h-24 relative">
                 <div className="absolute -bottom-10 left-6 w-20 h-20 rounded-full border-4 border-white bg-orange-100 overflow-hidden flex items-center justify-center text-orange-500 font-bold text-2xl">
                   {alumni.foto ? (
-                    <img src={`${import.meta.env.VITE_API_URL}${alumni.foto}`} alt={alumni.user?.name} className="w-full h-full object-cover" />
+                    <img src={alumni.foto.startsWith('http') ? alumni.foto : `${import.meta.env.VITE_API_URL || ''}${alumni.foto}`} alt={alumni.user?.name} className="w-full h-full object-cover" />
                   ) : (
                     alumni.user?.name?.charAt(0).toUpperCase()
                   )}

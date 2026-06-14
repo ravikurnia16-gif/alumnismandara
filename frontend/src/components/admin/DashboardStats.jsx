@@ -1,8 +1,16 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
-import { Users, Briefcase, FileText, CheckCircle, PieChart as PieIcon, MapPin } from 'lucide-react';
+import { Users, Briefcase, FileText, CheckCircle, PieChart as PieIcon, MapPin, GraduationCap } from 'lucide-react';
 import AlumniMap from '../AlumniMap';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "../ui/table";
 
 const COLORS = ['#f97316', '#0ea5e9', '#10b981', '#a855f7', '#64748b', '#e11d48'];
 
@@ -13,7 +21,8 @@ export default function DashboardStats() {
     angkatanData: [],
     jurusanData: [],
     statusKerjaData: [],
-    kesesuaianData: []
+    kesesuaianData: [],
+    kampusData: []
   });
   const [alumniList, setAlumniList] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -149,6 +158,38 @@ export default function DashboardStats() {
             )}
           </div>
         </div>
+      </div>
+
+      {/* Kampus Table Section */}
+      <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+        <h3 className="text-lg font-bold text-slate-800 mb-4 flex items-center">
+          <GraduationCap className="w-5 h-5 text-orange-500 mr-2" />
+          Statistik Lulusan Per Kampus
+        </h3>
+        {stats.kampusData?.length > 0 ? (
+          <div className="border border-slate-200 rounded-xl overflow-hidden">
+            <Table>
+              <TableHeader className="bg-slate-50">
+                <TableRow>
+                  <TableHead className="w-[80px] font-bold text-slate-700">No</TableHead>
+                  <TableHead className="font-bold text-slate-700">Nama Kampus</TableHead>
+                  <TableHead className="w-[200px] text-right font-bold text-slate-700">Jumlah Alumni</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {stats.kampusData.map((kampus, index) => (
+                  <TableRow key={index} className="hover:bg-slate-50 transition-colors">
+                    <TableCell className="font-medium text-slate-600">{index + 1}</TableCell>
+                    <TableCell className="font-bold text-slate-800">{kampus.name}</TableCell>
+                    <TableCell className="text-right font-semibold text-slate-700">{kampus.count} Alumni</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        ) : (
+          <div className="py-10 text-center text-slate-400">Belum ada data riwayat pendidikan alumni.</div>
+        )}
       </div>
 
       {/* Map Section */}
